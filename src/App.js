@@ -1,15 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import './App.css'
-import { Button, Container, Col, Row, Table, Dropdown, DropdownButton } from 'react-bootstrap'
-
+import {
+  Button,
+  Container,
+  Col,
+  Row,
+  Table,
+  Dropdown,
+  DropdownButton,
+  Nav,
+} from 'react-bootstrap'
+import ShowTable from './components/ShowTable'
+import Home from './components/Home'
+import {
+  BrowserRouter as Router,
+  Route,
+  Link,
+  Redirect,
+  withRouter,
+} from 'react-router-dom'
 const endpoint = 'http://localhost:3001/'
 
 const App = () => {
-
   const [tables, setTables] = useState([])
   const [table, setTable] = useState({})
   const [showTable, setShowTable] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(true)
+
 
   const fetchTables = () => {
     console.log('fetching .....')
@@ -24,49 +42,46 @@ const App = () => {
       })
   }
 
-  const fetchTable = (table) => {
-    console.log('fetching .....')
-    axios
-      .get(endpoint + 'all/' + table)
-      .then(body => {
-        console.log('TABLE:', table, body.data)
-        const {headers, rows} = body.data 
-        setTable({headers, rows})
-      })
-      .catch(error => {
-        console.log(error)
-      })
-  }
   useEffect(() => {
     fetchTables()
-    //fetchTable('JPAA')
   }, [])
-
-
+  const padding = { padding: 10 }
   return (
     <Container>
-      <Row>
-        <Col>
-          <DropdownButton id="dropdown-basic-button" title="CHOOSE TABLE">
-            {tables.map((table, i) => <Dropdown.Item key={i} onClick={() => { setShowTable(table); fetchTable(table) }}>{table}</Dropdown.Item>)}
-          </DropdownButton>
-        </Col>
-
-        {showTable && <Col>
-          <h3>{showTable}</h3>
-        </Col>}
-      </Row>
-
-      {table.headers && table.rows && <Table striped bordered hover>
-        <tbody>
-          <tr>
-            {table.headers.map((header, i) => <td key={i}>{header}</td>)}
-          </tr>
-          {table.rows.map((row, r) => <tr key={r}>{row.map((col, c) => <td key={c}>{col}</td>)}</tr>)}
-        </tbody>
-      </Table>}
+       
+      <Router>
+        <div>
+          <Row> 
+            <Link style={padding} to='/'>
+              <Button variant="outline-secondary">home</Button>
+            </Link>
+            <Link style={padding} to='/showTables'>
+              <Button variant="outline-secondary">Show Tables</Button>
+            </Link> 
+            <Link style={padding} to='/uploadTables'>
+              <Button variant="outline-secondary">Upload Tables</Button>
+            </Link> 
+            <Link style={padding} to='/login'>
+              <Button variant="outline-secondary" onClick={()=>setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
+            </Link> 
+          </Row>
+          <Route exact path='/' render={() => <Home />} />
+          <Route
+            path='/showTables'
+            render={() => (
+              <ShowTable
+                table={table}
+                setTable={setTable}
+                tables={tables}
+                showTable={showTable}
+                setShowTable={setShowTable}
+              />
+            )}
+          />
+        </div>
+      </Router>
     </Container>
-  );
+  )
 }
 
-export default App;
+export default App
