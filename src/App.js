@@ -13,6 +13,7 @@ import {
 } from 'react-bootstrap'
 import ShowTable from './components/ShowTable'
 import Home from './components/Home'
+import UploadCSV from './components/UploadCSV'
 import {
   BrowserRouter as Router,
   Route,
@@ -58,8 +59,8 @@ const App = () => {
             <Link style={padding} to='/showTables'>
               <Button variant="outline-secondary">Show Tables</Button>
             </Link> 
-            <Link style={padding} to='/uploadTables'>
-              <Button variant="outline-secondary">Upload Tables</Button>
+            <Link style={padding} to='/uploadCSV'>
+              <Button variant="outline-secondary">Upload CSV</Button>
             </Link> 
             <Link style={padding} to='/login'>
               <Button variant="outline-secondary" onClick={()=>setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
@@ -78,6 +79,7 @@ const App = () => {
               />
             )}
           />
+          <Route path='/uploadCSV/' render={()=><UploadCSV />}/>
         </div>
       </Router>
     </Container>
