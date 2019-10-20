@@ -24,7 +24,7 @@ const UploadCSV = () => {
         let text = e.target.result
         text = text.replace(/Ã¤/g, 'ä')
         text = text.replace(/Ã¶/g, 'ö')  
-        
+
         const uploadedRows = text.split('\n')
         let splitter = ','
         if(uploadedRows[0].split(';').length > uploadedRows[0].split(',').length){
@@ -34,7 +34,8 @@ const UploadCSV = () => {
         let CSVrows = []
         uploadedRows.forEach(row => CSVrows.push(row.split(splitter)))
         //console.log(CSVrows)
-        setUpLoadedCSV(CSVrows)
+        setUpLoadedCSV(CSVrows) 
+        CSVrows[0].forEach(cell=>console.log(isNaN(cell)))
       }
       reader.readAsText(file.files[0])
     }
