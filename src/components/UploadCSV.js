@@ -14,13 +14,14 @@ const endpoint = 'http://localhost:3001/'
 
 const UploadCSV = () => {
   const [upLoadedCSV, setUpLoadedCSV] = useState([])
-  const [newTableName, setNewTableName] = useState('perse')
+  const [newTableName, setNewTableName] = useState('vaesto')
 
   const handleUploadFile = () => {
     const file = document.getElementById('uploadedFile')
     console.log(file.files[0].type)
     if (file.files[0].type === 'text/csv') {
       const reader = new FileReader()
+
       reader.onload = e => {
         let text = e.target.result
         text = text.replace(/Ã¤/g, 'ä')
@@ -38,6 +39,7 @@ const UploadCSV = () => {
         setUpLoadedCSV(CSVrows)
         //CSVrows[0].forEach(cell=>console.log(isNaN(cell)))
       }
+
       reader.readAsText(file.files[0])
     }
   }
