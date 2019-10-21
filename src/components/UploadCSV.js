@@ -14,12 +14,12 @@ const endpoint = 'http://localhost:3001/'
 
 const UploadCSV = () => {
   const [upLoadedCSV, setUpLoadedCSV] = useState([])
-  const [newTableName, setNewTableName] = useState('vaesto')
+  const [newTableName, setNewTableName] = useState('excelpaatteita')
 
   const handleUploadFile = () => {
     const file = document.getElementById('uploadedFile')
     console.log(file.files[0].type)
-    if (file.files[0].type === 'text/csv') {
+    //if (file.files[0].type === 'text/csv') {
       const reader = new FileReader()
 
       reader.onload = e => {
@@ -36,12 +36,13 @@ const UploadCSV = () => {
         let CSVrows = []
         uploadedRows.forEach(row => CSVrows.push(row.split(delimiter)))
         //console.log(CSVrows)
+        
         setUpLoadedCSV(CSVrows)
         //CSVrows[0].forEach(cell=>console.log(isNaN(cell)))
       }
 
       reader.readAsText(file.files[0])
-    }
+   // }
   }
 
   const handleSaveFile = async () => {
