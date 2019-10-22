@@ -1,3 +1,21 @@
  Button{
    margin:5px
  }
+ .fileinput {
+   margin-top:10px
+ }
+
+ .form-control-file, .form-control-range {
+    display: block;
+    width: 100%;
+    margin-top: 1px;
+}
+input {
+  padding: 10px 5px 10px 5px
+}
+.replace {
+  margin:5px
+}
+Table {
+  margin:5px
+}

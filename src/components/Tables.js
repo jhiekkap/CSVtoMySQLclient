@@ -12,9 +12,7 @@ import {
 import axios from 'axios'
 const endpoint = 'http://localhost:3001/'
 
-const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
-  const [newTable, setNewTable] = useState([])
-  const [newTableClone, setNewTableClone] = useState([])
+const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
   const [cloneTables, setCloneTables] = useState([])
   const [currentTable, setCurrentTable] = useState([])
   const [newTableName, setNewTableName] = useState('excelpaatteita')
@@ -32,7 +30,7 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
         const wholeTable = [columns].concat(rows)
         setTable(wholeTable)
         setCurrentTable(wholeTable)
-        setCloneTables(wholeTable)
+        setCloneTables([wholeTable])
       })
       .catch(error => {
         console.log(error)
@@ -79,10 +77,8 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
         }
       }
       console.log(cleanerCSV)
-      setNewTable(cleanerCSV)
-      setNewTableClone(cleanerCSV)
-      //setTable({ columns, rows })
-      //setCloneTables(cloneTables.concat({ columns, rows }))
+      setCurrentTable(cleanerCSV)
+      setCloneTables([cleanerCSV])
       cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
     }
 
@@ -93,11 +89,11 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
   const handleSaveFile = async () => {
     console.log('TRYING TO SAVE')
     if (newTableName) {
-      const columns = newTable[0].map((col, i) => ({
+      const columns = currentTable[0].map((col, i) => ({
         name: col,
-        type: isNaN(newTable[0][i]) ? 'varchar(256)' : 'int',
+        type: isNaN(currentTable[0][i]) ? 'varchar(256)' : 'int',
       }))
-      const table = newTable.slice(1)
+      const table = currentTable.slice(1)
       console.log('TABLE CONTENTS', table)
 
       try {
@@ -119,14 +115,14 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
     }
   }
 
-  const handleInputColName = (value, Row, Col) => {
+  const handleInputCell = (value, Row, Col) => {
     console.log(value, Row, Col)
-    setNewTableClone(
-      newTableClone.map(
-        (row, r) =>
-          r === Row ? row.map((cell, c) => (c === Col ? value : cell)) : row ////TÄMÄ RIKKI
-      )
+    const newCurrentTable = currentTable.map((row, r) =>
+      r === Row ? row.map((cell, c) => (c === Col ? value : cell)) : row
     )
+    setCurrentTable(newCurrentTable)
+    setCloneTables(cloneTables.concat(newCurrentTable))
+    console.log('HISTORY', cloneTables.length, 'TABLES')
   }
 
   //const filtered = countries.filter(country => country.name.toLowerCase().match(newFilter.toLowerCase()))
@@ -142,19 +138,32 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
     setReplaceCell(e.target.value)
   }
 
-  const handleReplace = () => {
-    setNewTableClone(
-      newTableClone.map((row, r) =>
-        row.map((col, c) => (col === findCell ? replaceCell : col))
-      )
+  const handleReplace = e => {
+    e.preventDefault()
+    const newCurrentTable = currentTable.map((row, r) =>
+      row.map((col, c) => (col === findCell ? replaceCell : col))
     )
+    setCurrentTable(newCurrentTable)
+    setCloneTables(cloneTables.concat([newCurrentTable]))
+    console.log('HISTORY', cloneTables.length, 'TABLES')
+  }
+
+  const handleSortColumn = Col => {
+    console.log('SORT COLUMN', Col)
+    const columnArray = currentTable.filter((row, r) => r > 0).map(row => row[Col])
+    columnArray.sort()
+    console.log('SORTED COLUMN', columnArray)
+    const newCurrentTable = currentTable.map((row, r) => r > 0 ? row.map((col, c) => c === Col ? columnArray[r - 1] : col) : row)
+    setCurrentTable(newCurrentTable)
+    setCloneTables(cloneTables.concat([newCurrentTable]))
+    console.log('HISTORY', cloneTables.length, 'TABLES')
   }
 
   return (
     <Container>
       <Row>
         <DropdownButton
-          variant='outline-secondary'
+          variant='light'
           id='dropdown-basic-button'
           title='CHOOSE TABLE'
         >
@@ -172,19 +181,20 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
         </DropdownButton>
         <Form>
           <Form.Control
+            className='fileinput'
             type='file'
             id='uploadedFile'
             onChange={handleUploadFile}
           />
         </Form>
-        {currentTable && (
+        {currentTable.length > 0 && (
           <div>
-            <Button variant='outline-secondary' onClick={() => setEdit(!edit)}>
+            <Button variant='light' onClick={() => setEdit(!edit)}>
               EDIT
             </Button>
 
-            <Button variant='outline-secondary' onClick={handleSaveFile}>
-              SAVE
+            <Button variant='light' onClick={handleSaveFile}>
+              SAVE TO DATABASE
             </Button>
           </div>
         )}
@@ -192,31 +202,27 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
 
       {currentTable && (
         <Row>
-          <Col>
-            <Form>
+          <Form inline={true} onSubmit={handleReplace} className='replace'>
+            <Col md={2}>
               <Form.Control
                 type='text'
                 placeholder='find'
                 value={findCell}
                 onChange={handleFindCell}
               />
-            </Form>
-          </Col>
-          <Col>
-            <Button variant="light" onClick={handleReplace}>
-              REPLACE
-            </Button>
-          </Col>
-          <Col>
-            <Form>
+            </Col>
+            <Col md={2}>
+              <Form.Control type='submit' value='REPLACE' />
+            </Col>
+            <Col md={2}>
               <Form.Control
                 type='text'
                 placeholder='replace'
                 value={replaceCell}
                 onChange={handleReplaceCell}
               />
-            </Form>
-          </Col>
+            </Col>
+          </Form>
         </Row>
       )}
 
@@ -247,9 +253,11 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
                           type='text'
                           value={cell}
                           onChange={({ target }) =>
-                            handleInputColName(target.value, r, c)
+                            handleInputCell(target.value, r, c)
                           }
                         />
+                      ) : r === 0 ? (
+                        <u onClick={() => handleSortColumn(c)}>{cell}</u>
                       ) : (
                         cell
                       )}
@@ -265,4 +273,4 @@ const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
   )
 }
 
-export default UploadCSV
+export default Tables

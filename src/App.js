@@ -13,7 +13,7 @@ import {
 } from 'react-bootstrap'
 import ShowTable from './components/ShowTable'
 import Home from './components/Home'
-import UploadCSV from './components/UploadCSV'
+import Tables from './components/Tables'
 import {
   BrowserRouter as Router,
   Route,
@@ -54,20 +54,20 @@ const App = () => {
         <div>
           <Row>
             <Link to='/'>
-              <Button className='linkbuttons' variant="light">home</Button>
+              <Button className='linkbuttons' variant="light">Home</Button>
             </Link>
-            <Link to='/showTables'>
+            {/* <Link to='/showTables'>
               <Button className='linkbuttons' variant="light">Show Tables</Button>
-            </Link>
-            <Link to='/uploadCSV'>
-              <Button className='linkbuttons' variant="outline-secondary">Upload CSV</Button>
+            </Link> */}
+            <Link to='/tables'>
+              <Button className='linkbuttons' variant="light">Tables</Button>
             </Link> 
             <Link to='/login'>
-              <Button  className='linkbuttons' variant="outline-secondary" onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
+              <Button  className='linkbuttons' variant="light" onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
             </Link>
           </Row>
           <Route exact path='/' render={() => <Home />} />
-          <Route
+          {/* <Route
             path='/showTables'
             render={() => (
               <ShowTable
@@ -78,8 +78,8 @@ const App = () => {
                 setShowTable={setShowTable}
               />
             )}
-          />
-          <Route path='/uploadCSV/' render={() => <UploadCSV
+          /> */}
+          <Route path='/tables' render={() => <Tables
             table={table}
             setTable={setTable}
             tables={tables}
