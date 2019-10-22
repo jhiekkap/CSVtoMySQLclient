@@ -41,30 +41,30 @@ const App = () => {
       .catch(error => {
         console.log(error)
       })
-  } 
+  }
 
   useEffect(() => {
     fetchTables()
   }, [])
-  const padding = { padding: 10 }
+
   return (
     <Container>
-       
+
       <Router>
         <div>
-          <Row> 
-            <Link style={padding} to='/'>
+          <Row>
+            <Link to='/'>
               <Button variant="outline-secondary">home</Button>
             </Link>
-            <Link style={padding} to='/showTables'>
+            <Link to='/showTables'>
               <Button variant="outline-secondary">Show Tables</Button>
-            </Link> 
-            <Link style={padding} to='/uploadCSV'>
+            </Link>
+            <Link to='/uploadCSV'>
               <Button variant="outline-secondary">Upload CSV</Button>
             </Link> 
-            <Link style={padding} to='/login'>
-              <Button variant="outline-secondary" onClick={()=>setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
-            </Link> 
+            <Link to='/login'>
+              <Button variant="outline-secondary" onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
+            </Link>
           </Row>
           <Route exact path='/' render={() => <Home />} />
           <Route
@@ -79,7 +79,13 @@ const App = () => {
               />
             )}
           />
-          <Route path='/uploadCSV/' render={()=><UploadCSV />}/>
+          <Route path='/uploadCSV/' render={() => <UploadCSV
+            table={table}
+            setTable={setTable}
+            tables={tables}
+            showTable={showTable}
+            setShowTable={setShowTable}
+          />} />
         </div>
       </Router>
     </Container>

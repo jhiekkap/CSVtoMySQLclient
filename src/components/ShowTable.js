@@ -14,7 +14,7 @@ const ShowTable = ({ table, setTable, tables, showTable, setShowTable }) => {
         const {columns, rows} = body.data 
         setTable({columns, rows})
       })
-      .catch(error => {
+      .catch(error => { 
         console.log(error)
       })
   }

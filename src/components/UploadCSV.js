@@ -1,32 +1,30 @@
 import React, { useState } from 'react'
-import { Button, Container, Col, Row, Table, Form } from 'react-bootstrap'
+import { Button, Container, Col, Row, Table, Form, DropdownButton, Dropdown } from 'react-bootstrap'
+import axios from 'axios'
 const endpoint = 'http://localhost:3001/'
 
-const UploadCSV = () => {
+const UploadCSV = ({ tables, setShowTable, setTable }) => {
   const [newTable, setNewTable] = useState([])
   const [newTableClone, setNewTableClone] = useState([])
+  const [cloneTables, setCloneTables] = useState([])
   const [newTableName, setNewTableName] = useState('excelpaatteita')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('')
   const [replaceCell, setReplaceCell] = useState('')
 
-  function empty(data) {
-    if (typeof data == 'number' || typeof data == 'boolean') {
-      return false
-    }
-    if (typeof data == 'undefined' || data === null) {
-      return true
-    }
-    if (typeof data.length !== 'undefined') {
-      return data.length === 0
-    }
-    var count = 0
-    for (var i in data) {
-      if (data.hasOwnProperty(i)) {
-        count++
-      }
-    }
-    return count === 0
+  const fetchTable = (table) => {
+    console.log('fetching .....')
+    axios
+      .get(endpoint + 'all/' + table)
+      .then(body => {
+        console.log('TABLE:', table, body.data)
+        const {columns, rows} = body.data 
+        setTable({columns, rows})
+        setCloneTables(cloneTables.concat({columns, rows})) 
+      })
+      .catch(error => { 
+        console.log(error)
+      })
   }
 
   const handleUploadFile = () => {
@@ -64,7 +62,7 @@ const UploadCSV = () => {
         let lastCol = cleanerCSV[0][cleanerCSV[0].length - 1]
         //console.log('LAST COL:', lastCol)
         //console.log(typeof lastCol, lastCol.length, lastCol === '')
-        if (empty(lastCol) || lastCol === '' || lastCol.length < 2) {
+        if (lastCol === '' || lastCol.length < 2) {
           //console.log('hep')
           cleanerCSV = cleanerCSV.map(row => {
             let rowToPop = row
@@ -120,7 +118,7 @@ const UploadCSV = () => {
     console.log(value, Row, Col)
     setNewTableClone(
       newTableClone.map((row, r) => r === Row ?
-        row.map((cell, c) => c === Col  ? value : cell) : row  ////TÄMÄ RIKKI
+        row.map((cell, c) => c === Col ? value : cell) : row  ////TÄMÄ RIKKI
       )
     )
   }
@@ -128,7 +126,7 @@ const UploadCSV = () => {
   //const filtered = countries.filter(country => country.name.toLowerCase().match(newFilter.toLowerCase()))
 
   const handleFindCell = e => {
-    let word 
+    let word
     ///???????????????
     console.log('SANA', word)
     setFindCell(e.target.value)
@@ -147,6 +145,11 @@ const UploadCSV = () => {
     <Container>
       <Row>
         <Col>
+          <DropdownButton variant="outline-secondary" id="dropdown-basic-button" title="CHOOSE TABLE">
+            {tables.map((table, i) => <Dropdown.Item key={i} onClick={() => { setShowTable(table); fetchTable(table) }}>{table}</Dropdown.Item>)}
+          </DropdownButton>
+        </Col>
+        <Col>
           <Form>
             <Form.Control
               type='file'
@@ -158,8 +161,8 @@ const UploadCSV = () => {
         {newTableClone.length > 0 && (
           <Row>
             <Col>
-              <Button variant='outline-secondary' onClick={()=>setEdit(!edit)}>
-                {!edit ? 'EDIT' : 'EDIT OFF' }
+              <Button variant='outline-secondary' onClick={() => setEdit(!edit)}>
+                EDIT
               </Button>
             </Col>
             <Col>
@@ -212,7 +215,7 @@ const UploadCSV = () => {
                 <tr key={r}>
                   {edit && <td>x</td>}
                   {row.map((cell, c) => (
-                    <td style={{backgroundColor: cell === findCell && 'hotpink'}} key={c}>
+                    <td style={{ backgroundColor: cell === findCell && 'hotpink' }} key={c}>
                       {edit ? (
                         <input
                           type='text'
@@ -222,8 +225,8 @@ const UploadCSV = () => {
                           }
                         />
                       ) : (
-                        cell
-                      )}
+                          cell
+                        )}
                     </td>
                   ))}
                 </tr>
