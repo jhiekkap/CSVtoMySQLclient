@@ -7,7 +7,7 @@ const ShowTable = ({ table, setTable, tables, showTable, setShowTable }) => {
 
    const fetchTable = (table) => {
     console.log('fetching .....')
-    axios
+    axios 
       .get(endpoint + 'all/' + table)
       .then(body => {
         console.log('TABLE:', table, body.data)

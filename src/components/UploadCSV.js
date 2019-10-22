@@ -1,28 +1,40 @@
 import React, { useState } from 'react'
-import { Button, Container, Col, Row, Table, Form, DropdownButton, Dropdown } from 'react-bootstrap'
+import {
+  Button,
+  Container,
+  Col,
+  Row,
+  Table,
+  Form,
+  DropdownButton,
+  Dropdown,
+} from 'react-bootstrap'
 import axios from 'axios'
 const endpoint = 'http://localhost:3001/'
 
-const UploadCSV = ({ tables, setShowTable, setTable }) => {
+const UploadCSV = ({ tables, showTable, setShowTable, table, setTable }) => {
   const [newTable, setNewTable] = useState([])
   const [newTableClone, setNewTableClone] = useState([])
   const [cloneTables, setCloneTables] = useState([])
+  const [currentTable, setCurrentTable] = useState([])
   const [newTableName, setNewTableName] = useState('excelpaatteita')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('')
   const [replaceCell, setReplaceCell] = useState('')
 
-  const fetchTable = (table) => {
+  const fetchTable = table => {
     console.log('fetching .....')
     axios
       .get(endpoint + 'all/' + table)
       .then(body => {
         console.log('TABLE:', table, body.data)
-        const {columns, rows} = body.data 
-        setTable({columns, rows})
-        setCloneTables(cloneTables.concat({columns, rows})) 
+        const { columns, rows } = body.data
+        const wholeTable = [columns].concat(rows)
+        setTable(wholeTable)
+        setCurrentTable(wholeTable)
+        setCloneTables(wholeTable)
       })
-      .catch(error => { 
+      .catch(error => {
         console.log(error)
       })
   }
@@ -49,35 +61,28 @@ const UploadCSV = ({ tables, setShowTable, setTable }) => {
         uploadedRows[0].split(';').length > uploadedRows[0].split(',').length
           ? ';'
           : ','
-      //console.log(uploadedRows)
       let CSVrows = []
       uploadedRows.forEach(row => CSVrows.push(row.trim().split(delimiter)))
-      //console.log(CSVrows)
 
       let cleanerCSV = CSVrows.filter(row => row.length > 1)
 
-      /* let merkki1 = cleanerCSV[0][5].charAt(14)
-      console.log('OUTO MERKKI', merkki1) */
       while (true) {
         let lastCol = cleanerCSV[0][cleanerCSV[0].length - 1]
-        //console.log('LAST COL:', lastCol)
-        //console.log(typeof lastCol, lastCol.length, lastCol === '')
         if (lastCol === '' || lastCol.length < 2) {
-          //console.log('hep')
           cleanerCSV = cleanerCSV.map(row => {
             let rowToPop = row
             rowToPop.pop()
-            //console.log('POPPED ROW', rowToPop)
             return rowToPop
           })
         } else {
-          //console.log('BREAK!')
           break
         }
       }
       console.log(cleanerCSV)
       setNewTable(cleanerCSV)
       setNewTableClone(cleanerCSV)
+      //setTable({ columns, rows })
+      //setCloneTables(cloneTables.concat({ columns, rows }))
       cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
     }
 
@@ -117,8 +122,9 @@ const UploadCSV = ({ tables, setShowTable, setTable }) => {
   const handleInputColName = (value, Row, Col) => {
     console.log(value, Row, Col)
     setNewTableClone(
-      newTableClone.map((row, r) => r === Row ?
-        row.map((cell, c) => c === Col ? value : cell) : row  ////TÄMÄ RIKKI
+      newTableClone.map(
+        (row, r) =>
+          r === Row ? row.map((cell, c) => (c === Col ? value : cell)) : row ////TÄMÄ RIKKI
       )
     )
   }
@@ -137,85 +143,105 @@ const UploadCSV = ({ tables, setShowTable, setTable }) => {
   }
 
   const handleReplace = () => {
-    setNewTableClone(newTableClone.map((row, r) => row.map((col, c) => col === findCell ? replaceCell : col)))
+    setNewTableClone(
+      newTableClone.map((row, r) =>
+        row.map((col, c) => (col === findCell ? replaceCell : col))
+      )
+    )
   }
-
 
   return (
     <Container>
       <Row>
-        <Col>
-          <DropdownButton variant="outline-secondary" id="dropdown-basic-button" title="CHOOSE TABLE">
-            {tables.map((table, i) => <Dropdown.Item key={i} onClick={() => { setShowTable(table); fetchTable(table) }}>{table}</Dropdown.Item>)}
-          </DropdownButton>
-        </Col>
-        <Col>
-          <Form>
-            <Form.Control
-              type='file'
-              id='uploadedFile'
-              onChange={handleUploadFile}
-            />
-          </Form>
-        </Col>
-        {newTableClone.length > 0 && (
-          <Row>
-            <Col>
-              <Button variant='outline-secondary' onClick={() => setEdit(!edit)}>
-                EDIT
-              </Button>
-            </Col>
-            <Col>
-              <Button variant='outline-secondary' onClick={handleSaveFile}>
-                SAVE
-              </Button>
-            </Col>
+        <DropdownButton
+          variant='outline-secondary'
+          id='dropdown-basic-button'
+          title='CHOOSE TABLE'
+        >
+          {tables.map((table, i) => (
+            <Dropdown.Item
+              key={i}
+              onClick={() => {
+                setShowTable(table)
+                fetchTable(table)
+              }}
+            >
+              {table}
+            </Dropdown.Item>
+          ))}
+        </DropdownButton>
+        <Form>
+          <Form.Control
+            type='file'
+            id='uploadedFile'
+            onChange={handleUploadFile}
+          />
+        </Form>
+        {currentTable && (
+          <div>
+            <Button variant='outline-secondary' onClick={() => setEdit(!edit)}>
+              EDIT
+            </Button>
 
-            <Col>
-              <Form>
-                <Form.Control
-                  type='text'
-                  placeholder='find'
-                  value={findCell}
-                  onChange={handleFindCell}
-                />
-              </Form>
-            </Col>
-
-            <Col>
-              <Button variant='outline-secondary' onClick={handleReplace}>
-                REPLACE
-              </Button>
-            </Col>
-
-            <Col>
-              <Form>
-                <Form.Control
-                  type='text'
-                  placeholder='replace'
-                  value={replaceCell}
-                  onChange={handleReplaceCell}
-                />
-              </Form>
-            </Col>
-          </Row>
+            <Button variant='outline-secondary' onClick={handleSaveFile}>
+              SAVE
+            </Button>
+          </div>
         )}
       </Row>
+
+      {currentTable && (
+        <Row>
+          <Col>
+            <Form>
+              <Form.Control
+                type='text'
+                placeholder='find'
+                value={findCell}
+                onChange={handleFindCell}
+              />
+            </Form>
+          </Col>
+          <Col>
+            <Button variant="light" onClick={handleReplace}>
+              REPLACE
+            </Button>
+          </Col>
+          <Col>
+            <Form>
+              <Form.Control
+                type='text'
+                placeholder='replace'
+                value={replaceCell}
+                onChange={handleReplaceCell}
+              />
+            </Form>
+          </Col>
+        </Row>
+      )}
+
       <Row>
         <Table striped bordered hover>
-          {newTableClone[0] && (
+          {currentTable && (
             <tbody>
-              {edit && <tr>
-                <td></td>
-                {newTableClone[0].map((row, r) => (
-                  <td key={r}>x</td>
-                ))}
-              </tr>}
-              {newTableClone.map((row, r) => (
+              {edit && (
+                <tr>
+                  <td></td>
+                  {currentTable[0].map((row, r) => (
+                    <td key={r}>x</td>
+                  ))}
+                </tr>
+              )}
+              {currentTable.map((row, r) => (
                 <tr key={r}>
                   {edit && <td>x</td>}
                   {row.map((cell, c) => (
-                    <td style={{ backgroundColor: cell === findCell && 'hotpink' }} key={c}>
+                    <td
+                      style={{
+                        backgroundColor: cell === findCell && 'hotpink',
+                      }}
+                      key={c}
+                    >
                       {edit ? (
                         <input
                           type='text'
@@ -225,8 +251,8 @@ const UploadCSV = ({ tables, setShowTable, setTable }) => {
                           }
                         />
                       ) : (
-                          cell
-                        )}
+                        cell
+                      )}
                     </td>
                   ))}
                 </tr>

@@ -18,7 +18,7 @@ import {
   BrowserRouter as Router,
   Route,
   Link,
-  Redirect,
+  Redirect, 
   withRouter,
 } from 'react-router-dom'
 const endpoint = 'http://localhost:3001/'
@@ -54,16 +54,16 @@ const App = () => {
         <div>
           <Row>
             <Link to='/'>
-              <Button variant="outline-secondary">home</Button>
+              <Button className='linkbuttons' variant="light">home</Button>
             </Link>
             <Link to='/showTables'>
-              <Button variant="outline-secondary">Show Tables</Button>
+              <Button className='linkbuttons' variant="light">Show Tables</Button>
             </Link>
             <Link to='/uploadCSV'>
-              <Button variant="outline-secondary">Upload CSV</Button>
+              <Button className='linkbuttons' variant="outline-secondary">Upload CSV</Button>
             </Link> 
             <Link to='/login'>
-              <Button variant="outline-secondary" onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
+              <Button  className='linkbuttons' variant="outline-secondary" onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
             </Link>
           </Row>
           <Route exact path='/' render={() => <Home />} />
