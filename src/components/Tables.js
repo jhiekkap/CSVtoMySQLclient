@@ -109,7 +109,7 @@ const Tables = ({
       }
 
       reader.readAsText(file.files[0])
-    } else { 
+    } else {
       console.log('LOADING EXCEL...')
       readXlsxFile(file.files[0]).then(rows => {
         // `rows` is an array of rows
@@ -117,7 +117,7 @@ const Tables = ({
         //excelRows.push(rows.map(row => row.split(',')))
         console.log(rows)
         setCurrentTable(rows)
-        setCloneTables([rows])  
+        setCloneTables([rows])
         console.log('DONE!')
       })
     }
@@ -143,7 +143,9 @@ const Tables = ({
             table,
           })
           console.log(response)
-          fetchTables()
+          setTimeout(() => {
+            fetchTables()
+          }, 2000)
           if (response.status === 422) {
             alert('invalid input')
           }
@@ -348,7 +350,7 @@ const Tables = ({
                       {edit ? (
                         <input
                           type='text'
-                          value={cell}
+                          value={cell === null ? '' : cell}
                           onChange={({ target }) =>
                             handleInputCell(target.value, r, c)
                           }
