@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import readXlsxFile from 'read-excel-file'
 import {
   Button,
   Container,
@@ -63,51 +64,63 @@ const Tables = ({
 
   const handleUploadFile = () => {
     const file = document.getElementById('uploadedFile')
-    const type = file.files[0].type
-    const name = file.files[0].name.split('.')[0]
-    console.log(type)
-    console.log(name)
-    console.log(file.files[0])
-    setNewTableName(name)
-    //if (file.files[0].type === 'text/csv') {
-    const reader = new FileReader()
+    const fileType = file.files[0].type
+    if (fileType === 'text/csv') {
+      const type = file.files[0].type
+      const name = file.files[0].name.split('.')[0]
+      console.log(type)
+      console.log(name)
+      console.log(file.files[0])
+      setNewTableName(name)
+      const reader = new FileReader()
 
-    reader.onload = e => {
-      let text = e.target.result
+      reader.onload = e => {
+        let text = e.target.result
 
-      text = text.replace(/Ã¤/g, 'ä')
-      text = text.replace(/Ã¶/g, 'ö')
+        text = text.replace(/Ã¤/g, 'ä')
+        text = text.replace(/Ã¶/g, 'ö')
 
-      const uploadedRows = text.split('\n')
-      const delimiter =
-        uploadedRows[0].split(';').length > uploadedRows[0].split(',').length
-          ? ';'
-          : ','
-      let CSVrows = []
-      uploadedRows.forEach(row => CSVrows.push(row.trim().split(delimiter)))
+        const uploadedRows = text.split('\n')
+        const delimiter =
+          uploadedRows[0].split(';').length > uploadedRows[0].split(',').length
+            ? ';'
+            : ','
+        let CSVrows = []
+        uploadedRows.forEach(row => CSVrows.push(row.trim().split(delimiter)))
 
-      let cleanerCSV = CSVrows.filter(row => row.length > 1)
+        let cleanerCSV = CSVrows.filter(row => row.length > 1)
 
-      while (true) {
-        let lastCol = cleanerCSV[0][cleanerCSV[0].length - 1]
-        if (lastCol === '' || lastCol.length < 2) {
-          cleanerCSV = cleanerCSV.map(row => {
-            let rowToPop = row
-            rowToPop.pop()
-            return rowToPop
-          })
-        } else {
-          break
+        while (true) {
+          let lastCol = cleanerCSV[0][cleanerCSV[0].length - 1]
+          if (lastCol === '' || lastCol.length < 2) {
+            cleanerCSV = cleanerCSV.map(row => {
+              let rowToPop = row
+              rowToPop.pop()
+              return rowToPop
+            })
+          } else {
+            break
+          }
         }
+        console.log(cleanerCSV)
+        setCurrentTable(cleanerCSV)
+        setCloneTables([cleanerCSV])
+        //cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
       }
-      console.log(cleanerCSV)
-      setCurrentTable(cleanerCSV)
-      setCloneTables([cleanerCSV])
-      cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
-    }
 
-    reader.readAsText(file.files[0])
-    // }
+      reader.readAsText(file.files[0])
+    } else { 
+      console.log('LOADING EXCEL...')
+      readXlsxFile(file.files[0]).then(rows => {
+        // `rows` is an array of rows
+        // each row being an array of cells.
+        //excelRows.push(rows.map(row => row.split(',')))
+        console.log(rows)
+        setCurrentTable(rows)
+        setCloneTables([rows])  
+        console.log('DONE!')
+      })
+    }
   }
 
   const handleSaveFile = async () => {
@@ -130,9 +143,7 @@ const Tables = ({
             table,
           })
           console.log(response)
-          setTimeout(() => {
-            fetchTables()
-          }, 2000)
+          fetchTables()
           if (response.status === 422) {
             alert('invalid input')
           }
