@@ -37,6 +37,12 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
       })
   }
 
+  const upDateCurrentTable = newCurrentTable => {
+    setCurrentTable(newCurrentTable)
+    setCloneTables(cloneTables.concat([newCurrentTable]))
+    console.log('HISTORY', cloneTables.length, 'TABLES')
+  }
+
   const handleUploadFile = () => {
     const file = document.getElementById('uploadedFile')
     const type = file.files[0].type
@@ -120,9 +126,7 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
     const newCurrentTable = currentTable.map((row, r) =>
       r === Row ? row.map((cell, c) => (c === Col ? value : cell)) : row
     )
-    setCurrentTable(newCurrentTable)
-    setCloneTables(cloneTables.concat(newCurrentTable))
-    console.log('HISTORY', cloneTables.length, 'TABLES')
+    upDateCurrentTable(newCurrentTable)
   }
 
   //const filtered = countries.filter(country => country.name.toLowerCase().match(newFilter.toLowerCase()))
@@ -143,20 +147,46 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
     const newCurrentTable = currentTable.map((row, r) =>
       row.map((col, c) => (col === findCell ? replaceCell : col))
     )
-    setCurrentTable(newCurrentTable)
-    setCloneTables(cloneTables.concat([newCurrentTable]))
-    console.log('HISTORY', cloneTables.length, 'TABLES')
+    upDateCurrentTable(newCurrentTable)
   }
 
   const handleSortColumn = Col => {
     console.log('SORT COLUMN', Col)
-    const columnArray = currentTable.filter((row, r) => r > 0).map(row => row[Col])
+    /* const columnArray = currentTable.filter((row, r) => r > 0).map(row => row[Col])
     columnArray.sort()
-    console.log('SORTED COLUMN', columnArray)
-    const newCurrentTable = currentTable.map((row, r) => r > 0 ? row.map((col, c) => c === Col ? columnArray[r - 1] : col) : row)
-    setCurrentTable(newCurrentTable)
-    setCloneTables(cloneTables.concat([newCurrentTable]))
-    console.log('HISTORY', cloneTables.length, 'TABLES')
+    console.log('SORTED COLUMN', columnArray) */
+
+    const currentTableContents = currentTable.filter((row, r) => r > 0)
+    //console.log('KLOONISISÄLLÖT:', currentTableContents)
+    const sortedCurrentTableContents = sortColumns(currentTableContents, Col)
+    //console.log('KLOONISISÄLLÖT JÄRJESTYKSESSÄ:', sortedCurrentTableContents)
+    const newCurrentTable = currentTable.map((row, r) =>
+      r === 0 ? row : sortedCurrentTableContents[r - 1]
+    )
+    //const newCurrentTable = currentTable.map((row, r) => r > 0 ? row.map((col, c) => c === Col ? columnArray[r - 1] : col) : row)
+    upDateCurrentTable(newCurrentTable)
+  }
+
+  const sortColumns = (currentTableContents, c) => {
+    const columnSort = (a, b) => {
+      return a[c] < b[c] ? -1 : a[c] > b[c] ? 1 : 0
+    }
+    return currentTableContents.sort(columnSort)
+  }
+
+  const handleHideColumn = Col => {
+    const newCurrentTable = currentTable.map(row =>
+      row.filter((col, c) => c !== Col)
+    )
+    console.log('HIDE COLUMN', Col)
+    upDateCurrentTable(newCurrentTable)
+  }
+
+  const handleHideRow = Row => {
+    const newCurrentTable = currentTable.filter((row, r) => r !== Row)
+    
+    console.log('HIDE ROW', Row)
+    upDateCurrentTable(newCurrentTable)
   }
 
   return (
@@ -233,14 +263,16 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
               {edit && (
                 <tr>
                   <td></td>
-                  {currentTable[0].map((row, r) => (
-                    <td key={r}>x</td>
+                  {currentTable[0].map((col, c) => (
+                    <td key={c} onClick={() => handleHideColumn(c)}>
+                      x
+                    </td>
                   ))}
                 </tr>
               )}
               {currentTable.map((row, r) => (
                 <tr key={r}>
-                  {edit && <td>x</td>}
+                  {edit && <td onClick={() => handleHideRow(r)}>x</td>}
                   {row.map((cell, c) => (
                     <td
                       style={{

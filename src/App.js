@@ -54,7 +54,7 @@ const App = () => {
         <div>
           <Row>
             <Link to='/'>
-              <Button className='linkbuttons' variant="light">Home</Button>
+              <Button className='linkbuttons' variant="light" tables={tables}>Home</Button>
             </Link>
             {/* <Link to='/showTables'>
               <Button className='linkbuttons' variant="light">Show Tables</Button>
