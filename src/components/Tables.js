@@ -19,6 +19,7 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('')
   const [replaceCell, setReplaceCell] = useState('')
+  const [undoIndex, setUndoIndex] = useState(0)
 
   const fetchTable = table => {
     console.log('fetching .....')
@@ -39,7 +40,16 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
 
   const upDateCurrentTable = newCurrentTable => {
     setCurrentTable(newCurrentTable)
-    setCloneTables(cloneTables.concat([newCurrentTable]))
+    if (cloneTables.length - 1 === undoIndex) {
+      setCloneTables(cloneTables.concat([newCurrentTable]))
+    } else {
+      setCloneTables(
+        cloneTables
+          .filter((table, t) => t <= undoIndex)
+          .concat([newCurrentTable])
+      )
+    }
+    setUndoIndex(undoIndex + 1)
     console.log('HISTORY', cloneTables.length, 'TABLES')
   }
 
@@ -152,18 +162,11 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
 
   const handleSortColumn = Col => {
     console.log('SORT COLUMN', Col)
-    /* const columnArray = currentTable.filter((row, r) => r > 0).map(row => row[Col])
-    columnArray.sort()
-    console.log('SORTED COLUMN', columnArray) */
-
     const currentTableContents = currentTable.filter((row, r) => r > 0)
-    //console.log('KLOONISISÄLLÖT:', currentTableContents)
     const sortedCurrentTableContents = sortColumns(currentTableContents, Col)
-    //console.log('KLOONISISÄLLÖT JÄRJESTYKSESSÄ:', sortedCurrentTableContents)
     const newCurrentTable = currentTable.map((row, r) =>
       r === 0 ? row : sortedCurrentTableContents[r - 1]
     )
-    //const newCurrentTable = currentTable.map((row, r) => r > 0 ? row.map((col, c) => c === Col ? columnArray[r - 1] : col) : row)
     upDateCurrentTable(newCurrentTable)
   }
 
@@ -175,18 +178,41 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
   }
 
   const handleHideColumn = Col => {
-    const newCurrentTable = currentTable.map(row =>
-      row.filter((col, c) => c !== Col)
-    )
-    console.log('HIDE COLUMN', Col)
-    upDateCurrentTable(newCurrentTable)
+    if (currentTable[0].length > 1) {
+      const newCurrentTable = currentTable.map(row =>
+        row.filter((col, c) => c !== Col)
+      )
+      console.log('HIDE COLUMN', Col)
+      upDateCurrentTable(newCurrentTable)
+    }
   }
 
   const handleHideRow = Row => {
-    const newCurrentTable = currentTable.filter((row, r) => r !== Row)
-    
-    console.log('HIDE ROW', Row)
-    upDateCurrentTable(newCurrentTable)
+    if (currentTable.length > 1) {
+      const newCurrentTable = currentTable.filter((row, r) => r !== Row)
+      console.log('HIDE ROW', Row)
+      upDateCurrentTable(newCurrentTable)
+    }
+  }
+
+  const handleUndo = e => {
+    e.preventDefault()
+    if (cloneTables.length > 0 && undoIndex > 0) {
+      console.log('UNDO', e.target.value)
+      setCurrentTable(cloneTables[undoIndex - 1])
+      setUndoIndex(undoIndex - 1)
+      console.log('UNDOINDEX', undoIndex - 1)
+    }
+  }
+
+  const handleRedo = e => {
+    e.preventDefault()
+    if (undoIndex < cloneTables.length - 1) {
+      console.log('REDO')
+      setCurrentTable(cloneTables[undoIndex + 1])
+      setUndoIndex(undoIndex + 1)
+      console.log('UNDOINDEX', undoIndex + 1)
+    }
   }
 
   return (
@@ -195,7 +221,7 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
         <DropdownButton
           variant='light'
           id='dropdown-basic-button'
-          title='CHOOSE TABLE'
+          title={!showTable ? 'CHOOSE TABLE' : showTable}
         >
           {tables.map((table, i) => (
             <Dropdown.Item
@@ -230,29 +256,39 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
         )}
       </Row>
 
-      {currentTable && (
+      {currentTable.length > 0 && (
         <Row>
-          <Form inline={true} onSubmit={handleReplace} className='replace'>
-            <Col md={2}>
+          <Col md={6}>
+            <Form inline={true} onSubmit={handleReplace} className='replace'>
               <Form.Control
                 type='text'
                 placeholder='find'
                 value={findCell}
                 onChange={handleFindCell}
               />
-            </Col>
-            <Col md={2}>
               <Form.Control type='submit' value='REPLACE' />
-            </Col>
-            <Col md={2}>
               <Form.Control
                 type='text'
                 placeholder='replace'
                 value={replaceCell}
                 onChange={handleReplaceCell}
               />
-            </Col>
-          </Form>
+            </Form>
+            {/* <Form inline={true} className='unandredo' onSubmit={handleUndo}>
+              <Form.Control type='submit' name='undo' value='<=' />
+              </Form>
+              <Form inline={true} className='unandredo' onSubmit={handleRedo}>
+              <Form.Control type='submit' value='=>' />
+            </Form> */}
+          </Col>
+          <Col>
+            <Button variant='outline-secondary' onClick={handleUndo}>
+              Undo
+            </Button>
+            <Button variant='outline-secondary' onClick={handleRedo}>
+              Redo
+            </Button>
+          </Col>
         </Row>
       )}
 
