@@ -12,13 +12,21 @@ import {
 import axios from 'axios'
 const endpoint = 'http://localhost:3001/'
 
-const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
+const Tables = ({
+  tables,
+  showTable,
+  setShowTable,
+  table,
+  setTable,
+  fetchTables,
+}) => {
   const [cloneTables, setCloneTables] = useState([])
   const [currentTable, setCurrentTable] = useState([])
-  const [newTableName, setNewTableName] = useState('excelpaatteita')
+  const [newTableName, setNewTableName] = useState('')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('')
   const [replaceCell, setReplaceCell] = useState('')
+  //const [findMatch, setFindMatch] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
 
   const fetchTable = table => {
@@ -104,30 +112,36 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
 
   const handleSaveFile = async () => {
     console.log('TRYING TO SAVE')
-    if (newTableName) {
-      const columns = currentTable[0].map((col, i) => ({
-        name: col,
-        type: isNaN(currentTable[0][i]) ? 'varchar(256)' : 'int',
-      }))
-      const table = currentTable.slice(1)
-      console.log('TABLE CONTENTS', table)
+    if (!tables.includes(newTableName)) {
+      if (
+        window.confirm('Do you really want to save this table to database?')
+      ) {
+        const columns = currentTable[0].map((col, i) => ({
+          name: col,
+          type: isNaN(currentTable[0][i]) ? 'varchar(256)' : 'int',
+        }))
+        const table = currentTable.slice(1)
+        console.log('TABLE CONTENTS', table)
 
-      try {
-        let response = await fetch(endpoint + 'create', {
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          method: 'post',
-          body: JSON.stringify({ newTableName, columns, table }),
-        })
-        console.log(response)
-        if (response.status === 422) {
-          alert('invalid input')
+        try {
+          const response = await axios.post(endpoint + 'create', {
+            newTableName,
+            columns,
+            table,
+          })
+          console.log(response)
+          setTimeout(() => {
+            fetchTables()
+          }, 2000)
+          if (response.status === 422) {
+            alert('invalid input')
+          }
+        } catch (error) {
+          console.log(error)
         }
-      } catch (error) {
-        console.log(error)
       }
+    } else {
+      alert('Updating existing databases not yet possible.')
     }
   }
 
@@ -139,13 +153,14 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
     upDateCurrentTable(newCurrentTable)
   }
 
-  //const filtered = countries.filter(country => country.name.toLowerCase().match(newFilter.toLowerCase()))
-
   const handleFindCell = e => {
-    let word
-    ///???????????????
-    console.log('SANA', word)
-    setFindCell(e.target.value)
+    const findString = e.target.value
+    /* const filtered = []
+      .concat(...currentTable)
+      .find(string => string.toLowerCase().match(findString.toLowerCase()))
+    console.log('FILTERED', filtered) */
+    setFindCell(findString)
+    //setFindMatch(filtered)
   }
 
   const handleReplaceCell = e => {
@@ -170,9 +185,9 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
     upDateCurrentTable(newCurrentTable)
   }
 
-  const sortColumns = (currentTableContents, c) => {
+  const sortColumns = (currentTableContents, col) => {
     const columnSort = (a, b) => {
-      return a[c] < b[c] ? -1 : a[c] > b[c] ? 1 : 0
+      return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
     }
     return currentTableContents.sort(columnSort)
   }
@@ -228,6 +243,7 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
               key={i}
               onClick={() => {
                 setShowTable(table)
+                setNewTableName(table)
                 fetchTable(table)
               }}
             >
@@ -235,12 +251,20 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
             </Dropdown.Item>
           ))}
         </DropdownButton>
-        <Form>
+        <Form inline={true}>
           <Form.Control
             className='fileinput'
             type='file'
             id='uploadedFile'
             onChange={handleUploadFile}
+          />
+        </Form>
+        <Form inline={true}>
+          <Form.Control
+            type='text'
+            placeholder='newTableName'
+            value={newTableName}
+            onChange={({ target }) => setNewTableName(target.value)}
           />
         </Form>
         {currentTable.length > 0 && (
@@ -274,12 +298,6 @@ const Tables = ({ tables, showTable, setShowTable, table, setTable }) => {
                 onChange={handleReplaceCell}
               />
             </Form>
-            {/* <Form inline={true} className='unandredo' onSubmit={handleUndo}>
-              <Form.Control type='submit' name='undo' value='<=' />
-              </Form>
-              <Form inline={true} className='unandredo' onSubmit={handleRedo}>
-              <Form.Control type='submit' value='=>' />
-            </Form> */}
           </Col>
           <Col>
             <Button variant='outline-secondary' onClick={handleUndo}>

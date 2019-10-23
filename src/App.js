@@ -85,6 +85,7 @@ const App = () => {
             tables={tables}
             showTable={showTable}
             setShowTable={setShowTable}
+            fetchTables={fetchTables}
           />} />
         </div>
       </Router>
