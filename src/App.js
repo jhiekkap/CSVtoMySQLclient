@@ -41,7 +41,7 @@ const App = () => {
       .catch(error => {
         console.log(error)
       })
-  }
+  } 
 
   useEffect(() => {
     fetchTables()

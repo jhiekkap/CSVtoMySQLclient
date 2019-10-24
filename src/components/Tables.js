@@ -23,7 +23,7 @@ const Tables = ({
 }) => {
   const [cloneTables, setCloneTables] = useState([])
   const [currentTable, setCurrentTable] = useState([])
-  const [newTableName, setNewTableName] = useState('')
+  const [tableName, setTableName] = useState('')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('')
   const [replaceCell, setReplaceCell] = useState('')
@@ -71,7 +71,7 @@ const Tables = ({
       console.log(type)
       console.log(name)
       console.log(file.files[0])
-      setNewTableName(name)
+      setTableName(name)
       const reader = new FileReader()
 
       reader.onload = e => {
@@ -118,6 +118,7 @@ const Tables = ({
         console.log(rows)
         setCurrentTable(rows)
         setCloneTables([rows])
+        setTableName(file.files[0].name.split('.')[0])
         console.log('DONE!')
       })
     }
@@ -125,7 +126,7 @@ const Tables = ({
 
   const handleSaveFile = async () => {
     console.log('TRYING TO SAVE')
-    if (!tables.includes(newTableName)) {
+    if (!tables.includes(tableName)) {
       if (
         window.confirm('Do you really want to save this table to database?')
       ) {
@@ -137,18 +138,27 @@ const Tables = ({
         console.log('TABLE CONTENTS', table)
 
         try {
-          const response = await axios.post(endpoint + 'create', {
-            newTableName,
+          const createResponse = await axios.post(endpoint + 'create', {
+            tableName,
             columns,
-            table,
+            table
           })
-          console.log(response)
+          console.log(createResponse)
+          /* table.forEach(async row => {
+            const insertResponse = await axios.post(endpoint + 'insert', {
+              tableName,
+              columns, 
+              row
+            })
+            console.log(insertResponse)
+          })  */
+
           setTimeout(() => {
             fetchTables()
           }, 2000)
-          if (response.status === 422) {
-            alert('invalid input')
-          }
+          /*  if (response.status === 422) {
+             alert('invalid input')
+           } */
         } catch (error) {
           console.log(error)
         }
@@ -256,7 +266,7 @@ const Tables = ({
               key={i}
               onClick={() => {
                 setShowTable(table)
-                setNewTableName(table)
+                setTableName(table)
                 fetchTable(table)
               }}
             >
@@ -275,9 +285,9 @@ const Tables = ({
         <Form inline={true}>
           <Form.Control
             type='text'
-            placeholder='newTableName'
-            value={newTableName}
-            onChange={({ target }) => setNewTableName(target.value)}
+            // placeholder='tableName'
+            value={tableName}
+            onChange={({ target }) => setTableName(target.value)}
           />
         </Form>
         {currentTable.length > 0 && (
@@ -358,8 +368,8 @@ const Tables = ({
                       ) : r === 0 ? (
                         <u onClick={() => handleSortColumn(c)}>{cell}</u>
                       ) : (
-                        cell
-                      )}
+                            cell
+                          )}
                     </td>
                   ))}
                 </tr>
