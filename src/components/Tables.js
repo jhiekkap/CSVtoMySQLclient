@@ -62,15 +62,21 @@ const Tables = ({
     console.log('HISTORY', cloneTables.length, 'TABLES')
   }
 
+  const cleanName = file => {
+    let name = file.name.split('.')[0]
+    const scandies = ['/ä/g','/Ä/g','/ö/g','/Ö/g','/å/g','/Å/g']
+    const nonScandies = ['a','A','o','O','å','Å']
+    nonScandies.forEach((char,i) => name.replace(scandies[i], char))
+    name = name.replace(/[^a-zA-Z0-9 ]/g, "")
+    return name.replace(/ /gi, "_")
+  }
+
   const handleUploadFile = () => {
-    const file = document.getElementById('uploadedFile')
-    const fileType = file.files[0].type
-    if (fileType === 'text/csv') {
-      const type = file.files[0].type
-      const name = file.files[0].name.split('.')[0]
-      console.log(type)
-      console.log(name)
-      console.log(file.files[0])
+    const file = document.getElementById('uploadedFile').files[0]
+    const type = file.type
+    const name = cleanName(file)
+    if (type === 'text/csv') { 
+      console.log(type, name, file) 
       setTableName(name)
       const reader = new FileReader()
 
@@ -89,7 +95,6 @@ const Tables = ({
         uploadedRows.forEach(row => CSVrows.push(row.trim().split(delimiter)))
 
         let cleanerCSV = CSVrows.filter(row => row.length > 1)
-
         while (true) {
           let lastCol = cleanerCSV[0][cleanerCSV[0].length - 1]
           if (lastCol === '' || lastCol.length < 2) {
@@ -108,17 +113,14 @@ const Tables = ({
         //cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
       }
 
-      reader.readAsText(file.files[0])
+      reader.readAsText(file)
     } else {
       console.log('LOADING EXCEL...')
-      readXlsxFile(file.files[0]).then(rows => {
-        // `rows` is an array of rows
-        // each row being an array of cells.
-        //excelRows.push(rows.map(row => row.split(',')))
+      readXlsxFile(file).then(rows => { 
         console.log(rows)
         setCurrentTable(rows)
         setCloneTables([rows])
-        setTableName(file.files[0].name.split('.')[0])
+        setTableName(name)
         console.log('DONE!')
       })
     }
@@ -141,10 +143,10 @@ const Tables = ({
           const createResponse = await axios.post(endpoint + 'create', {
             tableName,
             columns,
-            table
+            table,
           })
           console.log(createResponse)
-          /* table.forEach(async row => {
+          /* table.forEach(async row => {   //////EI TOIMI REMOTEMYSQLlässä
             const insertResponse = await axios.post(endpoint + 'insert', {
               tableName,
               columns, 
@@ -216,7 +218,11 @@ const Tables = ({
   }
 
   const handleHideColumn = Col => {
-    if (currentTable[0].length > 1) {
+    if (
+      currentTable[0].length > 1 &&
+      (currentTable[0][0] === 'ID' &&
+        window.confirm('Are you sure you want to hide ID?'))
+    ) {
       const newCurrentTable = currentTable.map(row =>
         row.filter((col, c) => c !== Col)
       )
@@ -226,7 +232,10 @@ const Tables = ({
   }
 
   const handleHideRow = Row => {
-    if (currentTable.length > 1) {
+    if (
+      currentTable.length > 1 &&
+      (Row === 0 && window.confirm('Are you sure you want to hide headers?'))
+    ) {
       const newCurrentTable = currentTable.filter((row, r) => r !== Row)
       console.log('HIDE ROW', Row)
       upDateCurrentTable(newCurrentTable)
@@ -368,8 +377,8 @@ const Tables = ({
                       ) : r === 0 ? (
                         <u onClick={() => handleSortColumn(c)}>{cell}</u>
                       ) : (
-                            cell
-                          )}
+                        cell
+                      )}
                     </td>
                   ))}
                 </tr>
