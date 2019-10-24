@@ -29,6 +29,7 @@ const Tables = ({
   const [replaceCell, setReplaceCell] = useState('')
   //const [findMatch, setFindMatch] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
+  const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
 
   const fetchTable = table => {
     console.log('fetching .....')
@@ -41,6 +42,7 @@ const Tables = ({
         setTable(wholeTable)
         setCurrentTable(wholeTable)
         setCloneTables([wholeTable])
+        setToggleColumnsOrder(columns.map(col => false))
       })
       .catch(error => {
         console.log(error)
@@ -62,11 +64,11 @@ const Tables = ({
     console.log('HISTORY', cloneTables.length, 'TABLES')
   }
 
-  const cleanName = file => {
-    let name = file.name.split('.')[0]
-    const scandies = ['/ä/g','/Ä/g','/ö/g','/Ö/g','/å/g','/Å/g']
+  const cleanName = name => { 
+    /* const scandies = ['/ä/g','/Ä/g','/ö/g','/Ö/g','/å/g','/Å/g']
     const nonScandies = ['a','A','o','O','å','Å']
-    nonScandies.forEach((char,i) => name.replace(scandies[i], char))
+    nonScandies.forEach((char,i) => name.replace(scandies[i], char)) */
+    ['a','A','o','O','å','Å'].forEach((char,i) => name.replace(['/ä/g','/Ä/g','/ö/g','/Ö/g','/å/g','/Å/g'][i], char))
     name = name.replace(/[^a-zA-Z0-9 ]/g, "")
     return name.replace(/ /gi, "_")
   }
@@ -74,7 +76,7 @@ const Tables = ({
   const handleUploadFile = () => {
     const file = document.getElementById('uploadedFile').files[0]
     const type = file.type
-    const name = cleanName(file)
+    const name = cleanName(file.name.split('.')[0]) 
     if (type === 'text/csv') { 
       console.log(type, name, file) 
       setTableName(name)
@@ -110,6 +112,8 @@ const Tables = ({
         console.log(cleanerCSV)
         setCurrentTable(cleanerCSV)
         setCloneTables([cleanerCSV])
+        const columns = cleanerCSV[0]
+        setToggleColumnsOrder(columns.map(col => false))
         //cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
       }
 
@@ -130,10 +134,10 @@ const Tables = ({
     console.log('TRYING TO SAVE')
     if (!tables.includes(tableName)) {
       if (
-        window.confirm('Do you really want to save this table to database?')
+        window.confirm(`Do you really want to save this table ${cleanName(tableName)} to database?`)
       ) {
         const columns = currentTable[0].map((col, i) => ({
-          name: col,
+          name: cleanName(col),
           type: isNaN(currentTable[0][i]) ? 'varchar(256)' : 'int',
         }))
         const table = currentTable.slice(1)
@@ -141,7 +145,7 @@ const Tables = ({
 
         try {
           const createResponse = await axios.post(endpoint + 'create', {
-            tableName,
+            tableName:cleanName(tableName),
             columns,
             table,
           })
@@ -201,18 +205,25 @@ const Tables = ({
   }
 
   const handleSortColumn = Col => {
-    console.log('SORT COLUMN', Col)
+    console.log('SORT COLUMN', Col, toggleColumnsOrder)
     const currentTableContents = currentTable.filter((row, r) => r > 0)
     const sortedCurrentTableContents = sortColumns(currentTableContents, Col)
     const newCurrentTable = currentTable.map((row, r) =>
       r === 0 ? row : sortedCurrentTableContents[r - 1]
     )
     upDateCurrentTable(newCurrentTable)
+    setToggleColumnsOrder(toggleColumnsOrder.map((col, c) => c === Col ? !col : col))
   }
 
   const sortColumns = (currentTableContents, col) => {
     const columnSort = (a, b) => {
-      return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
+      console.log(toggleColumnsOrder[col] ? 'nouseva': 'laskeva')
+      if(toggleColumnsOrder[col]){ 
+        return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
+      } else {
+        return a[col] > b[col] ? -1 : a[col] < b[col] ? 1 : 0
+      }
+      //return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
     }
     return currentTableContents.sort(columnSort)
   }
