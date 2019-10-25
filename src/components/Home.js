@@ -14,9 +14,11 @@ const Home = () => {
 
 
     return (
-        <Container>
-            home
-        </Container>
+        <form>
+            <label>
+                <input type="text" placeholder="Search..">
+            </label>
+        </form>
     )
 }
 
