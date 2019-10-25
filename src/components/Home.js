@@ -3,14 +3,14 @@ import {
   Button,
   Container,
   Col,
-  Row,
+  Row, 
   Table,
   Dropdown,
   DropdownButton,
 } from 'react-bootstrap'
 
 
-const Home = () => {
+const Home = ({  tables, fetchTables, fetchTable }) => {
 
 
     return (

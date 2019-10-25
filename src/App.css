@@ -1,22 +1,21 @@
-.App {
-  text-align: center;
-}
+ Button{
+   margin:5px
+ }
+ .fileinput {
+   margin-top:10px
+ }
 
-.App-logo {
-  height: 40vmin;
+ .form-control-file, .form-control-range {
+    display: block;
+    width: 100%;
+    margin-top: 1px;
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+input {
+  padding: 10px 5px 10px 5px
 }
-
-.App-link {
-  color: #09d3ac;
+.replace {
+  margin:5px
+}
+Table {
+  margin:5px
 }
