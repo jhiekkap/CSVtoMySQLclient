@@ -1,47 +1,113 @@
-import React from 'react'  
-import { Button, Container, Col, Row, Table, Dropdown, DropdownButton } from 'react-bootstrap'
-import axios from 'axios'
-const endpoint = 'http://localhost:3001/'
+import React from 'react'
+import { Table } from 'react-bootstrap'
 
-const ShowTable = ({ table, setTable, tables, showTable, setShowTable }) => { 
+const ShowTable = ({
+  edit,
+  currentTable,
+  upDateCurrentTable,
+  findCell,
+  handleInputCell,
+  toggleColumnsOrder,
+  setToggleColumnsOrder,
+}) => {
+  const handleSortColumn = Col => {
+    console.log('SORT COLUMN', Col, toggleColumnsOrder)
+    const currentTableContents = currentTable.filter((row, r) => r > 0)
+    const sortedCurrentTableContents = sortColumns(currentTableContents, Col)
+    const newCurrentTable = currentTable.map((row, r) =>
+      r === 0 ? row : sortedCurrentTableContents[r - 1]
+    )
+    upDateCurrentTable(newCurrentTable)
+    setToggleColumnsOrder(
+      toggleColumnsOrder.map((col, c) => (c === Col ? !col : col))
+    )
+  }
 
-   const fetchTable = (table) => {
-    console.log('fetching .....')
-    axios 
-      .get(endpoint + 'all/' + table)
-      .then(body => {
-        console.log('TABLE:', table, body.data)
-        const {columns, rows} = body.data 
-        setTable({columns, rows})
-      })
-      .catch(error => { 
-        console.log(error)
-      })
+  const sortColumns = (currentTableContents, col) => {
+    const columnSort = (a, b) => {
+      console.log(toggleColumnsOrder[col] ? 'nouseva' : 'laskeva')
+      if (toggleColumnsOrder[col]) {
+        return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
+      } else {
+        return a[col] > b[col] ? -1 : a[col] < b[col] ? 1 : 0
+      }
+    }
+    return currentTableContents.sort(columnSort)
+  }
+
+  const handleHideColumn = Col => {
+    console.log('HIDE COLUMN', Col)
+    if (
+      currentTable[0].length < 2 ||
+      (currentTable[0][Col] === 'ID' &&
+        !window.confirm('Are you sure you want to hide ID?'))
+    ) {
+      return
+    }
+    console.log('HIDING COL!!!!!')
+    const newCurrentTable = currentTable.map(row =>
+      row.filter((col, c) => c !== Col)
+    ) 
+    upDateCurrentTable(newCurrentTable)
+  }
+
+  const handleHideRow = Row => {
+    console.log('HIDE ROW', Row)
+    if (
+      currentTable.length < 2 ||
+      (Row === 0 && !window.confirm('Are you sure you want to hide headers?'))
+    ) {
+      return
+    }
+    const newCurrentTable = currentTable.filter((row, r) => r !== Row)
+    upDateCurrentTable(newCurrentTable)
   }
 
   return (
-    <Container>
-      <Row>
-        <Col>
-          <DropdownButton variant="outline-secondary" id="dropdown-basic-button" title= "CHOOSE TABLE">
-            {tables.map((table, i) => <Dropdown.Item key={i} onClick={() => { setShowTable(table); fetchTable(table) }}>{table}</Dropdown.Item>)}
-          </DropdownButton>
-        </Col>
-
-        {showTable && <Col>
-          <h3>{showTable}</h3>
-        </Col>}
-      </Row> 
-      {table.columns && table.rows && <Table striped bordered hover>
-        <tbody> 
-          <tr>
-            {table.columns.map((col, i) => <td key={i}>{col}</td>)}
-          </tr>
-          {table.rows.map((row, r) => <tr key={r}>{row.map((cell, c) => <td key={c}>{cell}</td>)}</tr>)}
+    <Table striped bordered hover>
+      {currentTable && (
+        <tbody>
+          {edit && (
+            <tr>
+              <td></td>
+              {currentTable[0].map((col, c) => (
+                <td key={c} onClick={() => handleHideColumn(c)}>
+                  x
+                </td>
+              ))}
+            </tr>
+          )}
+          {currentTable.map((row, r) => (
+            <tr key={r}>
+              {edit && <td onClick={() => handleHideRow(r)}>x</td>}
+              {row.map((cell, c) => (
+                <td
+                  style={{
+                    backgroundColor: cell === findCell && 'hotpink',
+                  }}
+                  key={c}
+                >
+                  {edit ? (
+                    <input
+                      type='text'
+                      value={cell === null ? '' : cell}
+                      onChange={({ target }) =>
+                        handleInputCell(target.value, r, c)
+                      }
+                    />
+                  ) : r === 0 ? (
+                    <u onClick={() => handleSortColumn(c)}>{cell}</u>
+                  ) : (
+                    cell
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
         </tbody>
-      </Table>}
-    </Container>
-  );
+      )}
+    </Table>
+  )
 }
 
-export default ShowTable;
+export default ShowTable

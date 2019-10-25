@@ -5,22 +5,16 @@ import {
   Container,
   Col,
   Row,
-  Table,
   Form,
   DropdownButton,
   Dropdown,
 } from 'react-bootstrap'
 import axios from 'axios'
+import ShowTable from './ShowTable'
 const endpoint = 'http://localhost:3001/'
 
-const Tables = ({
-  tables,
-  showTable,
-  setShowTable,
-  table,
-  setTable,
-  fetchTables,
-}) => {
+const Tables = ({ tables, fetchTables }) => {
+  //const [table, setTable] = useState({}) RESET????????????????
   const [cloneTables, setCloneTables] = useState([])
   const [currentTable, setCurrentTable] = useState([])
   const [tableName, setTableName] = useState('')
@@ -30,6 +24,7 @@ const Tables = ({
   //const [findMatch, setFindMatch] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
   const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
+  const [showTable, setShowTable] = useState('')
 
   const fetchTable = table => {
     console.log('fetching .....')
@@ -39,17 +34,17 @@ const Tables = ({
         console.log('TABLE:', table, body.data)
         const { columns, rows } = body.data
         const wholeTable = [columns].concat(rows)
-        setTable(wholeTable)
+        //setTable(wholeTable)  RESET ???????
         setCurrentTable(wholeTable)
         setCloneTables([wholeTable])
-        setToggleColumnsOrder(columns.map(col => false))
+        setToggleColumnsOrder(columns.map(col => true))
       })
       .catch(error => {
         console.log(error)
       })
   }
 
-  const upDateCurrentTable = newCurrentTable => {
+  const upDateCurrentTable = newCurrentTable => { 
     setCurrentTable(newCurrentTable)
     if (cloneTables.length - 1 === undoIndex) {
       setCloneTables(cloneTables.concat([newCurrentTable]))
@@ -64,30 +59,31 @@ const Tables = ({
     console.log('HISTORY', cloneTables.length, 'TABLES')
   }
 
-  const cleanName = name => { 
+  const cleanName = name => {
     /* const scandies = ['/ä/g','/Ä/g','/ö/g','/Ö/g','/å/g','/Å/g']
     const nonScandies = ['a','A','o','O','å','Å']
     nonScandies.forEach((char,i) => name.replace(scandies[i], char)) */
-    ['a','A','o','O','å','Å'].forEach((char,i) => name.replace(['/ä/g','/Ä/g','/ö/g','/Ö/g','/å/g','/Å/g'][i], char))
-    name = name.replace(/[^a-zA-Z0-9 ]/g, "")
-    return name.replace(/ /gi, "_")
+    ;['a', 'A', 'o', 'O', 'å', 'Å'].forEach((char, i) =>
+      name.replace(['/ä/g', '/Ä/g', '/ö/g', '/Ö/g', '/å/g', '/Å/g'][i], char)
+    )
+    name = name.replace(/[^a-zA-Z0-9 ]/g, '')
+    return name.replace(/ /gi, '_')
   }
 
   const handleUploadFile = () => {
+    setShowTable('')
     const file = document.getElementById('uploadedFile').files[0]
     const type = file.type
-    const name = cleanName(file.name.split('.')[0]) 
-    if (type === 'text/csv') { 
-      console.log(type, name, file) 
+    const name = cleanName(file.name.split('.')[0])
+    if (type === 'text/csv') {
+      console.log(type, name, file)
       setTableName(name)
       const reader = new FileReader()
 
       reader.onload = e => {
         let text = e.target.result
-
         text = text.replace(/Ã¤/g, 'ä')
         text = text.replace(/Ã¶/g, 'ö')
-
         const uploadedRows = text.split('\n')
         const delimiter =
           uploadedRows[0].split(';').length > uploadedRows[0].split(',').length
@@ -120,7 +116,7 @@ const Tables = ({
       reader.readAsText(file)
     } else {
       console.log('LOADING EXCEL...')
-      readXlsxFile(file).then(rows => { 
+      readXlsxFile(file).then(rows => {
         console.log(rows)
         setCurrentTable(rows)
         setCloneTables([rows])
@@ -134,7 +130,11 @@ const Tables = ({
     console.log('TRYING TO SAVE')
     if (!tables.includes(tableName)) {
       if (
-        window.confirm(`Do you really want to save this table ${cleanName(tableName)} to database?`)
+        window.confirm(
+          `Do you really want to save this table ${cleanName(
+            tableName
+          )} to database?`
+        )
       ) {
         const columns = currentTable[0].map((col, i) => ({
           name: cleanName(col),
@@ -145,7 +145,7 @@ const Tables = ({
 
         try {
           const createResponse = await axios.post(endpoint + 'create', {
-            tableName:cleanName(tableName),
+            tableName: cleanName(tableName),
             columns,
             table,
           })
@@ -202,55 +202,6 @@ const Tables = ({
       row.map((col, c) => (col === findCell ? replaceCell : col))
     )
     upDateCurrentTable(newCurrentTable)
-  }
-
-  const handleSortColumn = Col => {
-    console.log('SORT COLUMN', Col, toggleColumnsOrder)
-    const currentTableContents = currentTable.filter((row, r) => r > 0)
-    const sortedCurrentTableContents = sortColumns(currentTableContents, Col)
-    const newCurrentTable = currentTable.map((row, r) =>
-      r === 0 ? row : sortedCurrentTableContents[r - 1]
-    )
-    upDateCurrentTable(newCurrentTable)
-    setToggleColumnsOrder(toggleColumnsOrder.map((col, c) => c === Col ? !col : col))
-  }
-
-  const sortColumns = (currentTableContents, col) => {
-    const columnSort = (a, b) => {
-      console.log(toggleColumnsOrder[col] ? 'nouseva': 'laskeva')
-      if(toggleColumnsOrder[col]){ 
-        return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
-      } else {
-        return a[col] > b[col] ? -1 : a[col] < b[col] ? 1 : 0
-      }
-      //return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
-    }
-    return currentTableContents.sort(columnSort)
-  }
-
-  const handleHideColumn = Col => {
-    if (
-      currentTable[0].length > 1 &&
-      (currentTable[0][0] === 'ID' &&
-        window.confirm('Are you sure you want to hide ID?'))
-    ) {
-      const newCurrentTable = currentTable.map(row =>
-        row.filter((col, c) => c !== Col)
-      )
-      console.log('HIDE COLUMN', Col)
-      upDateCurrentTable(newCurrentTable)
-    }
-  }
-
-  const handleHideRow = Row => {
-    if (
-      currentTable.length > 1 &&
-      (Row === 0 && window.confirm('Are you sure you want to hide headers?'))
-    ) {
-      const newCurrentTable = currentTable.filter((row, r) => r !== Row)
-      console.log('HIDE ROW', Row)
-      upDateCurrentTable(newCurrentTable)
-    }
   }
 
   const handleUndo = e => {
@@ -352,51 +303,16 @@ const Tables = ({
           </Col>
         </Row>
       )}
-
       <Row>
-        <Table striped bordered hover>
-          {currentTable && (
-            <tbody>
-              {edit && (
-                <tr>
-                  <td></td>
-                  {currentTable[0].map((col, c) => (
-                    <td key={c} onClick={() => handleHideColumn(c)}>
-                      x
-                    </td>
-                  ))}
-                </tr>
-              )}
-              {currentTable.map((row, r) => (
-                <tr key={r}>
-                  {edit && <td onClick={() => handleHideRow(r)}>x</td>}
-                  {row.map((cell, c) => (
-                    <td
-                      style={{
-                        backgroundColor: cell === findCell && 'hotpink',
-                      }}
-                      key={c}
-                    >
-                      {edit ? (
-                        <input
-                          type='text'
-                          value={cell === null ? '' : cell}
-                          onChange={({ target }) =>
-                            handleInputCell(target.value, r, c)
-                          }
-                        />
-                      ) : r === 0 ? (
-                        <u onClick={() => handleSortColumn(c)}>{cell}</u>
-                      ) : (
-                        cell
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          )}
-        </Table>
+        <ShowTable
+          currentTable={currentTable} 
+          edit={edit}
+          upDateCurrentTable={upDateCurrentTable}
+          toggleColumnsOrder={toggleColumnsOrder}
+          setToggleColumnsOrder={setToggleColumnsOrder}
+          findCell={findCell}
+          handleInputCell={handleInputCell}
+        />
       </Row>
     </Container>
   )

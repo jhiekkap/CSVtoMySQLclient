@@ -3,36 +3,25 @@ import axios from 'axios'
 import './App.css'
 import {
   Button,
-  Container,
-  Col,
-  Row,
-  Table,
-  Dropdown,
-  DropdownButton,
-  Nav,
-} from 'react-bootstrap'
-import ShowTable from './components/ShowTable'
+  Container, 
+  Row, 
+} from 'react-bootstrap' 
 import Home from './components/Home'
 import Tables from './components/Tables'
 import {
   BrowserRouter as Router,
   Route,
-  Link,
-  Redirect, 
-  withRouter,
+  Link, 
 } from 'react-router-dom'
 const endpoint = 'http://localhost:3001/'
 
 const App = () => {
-  const [tables, setTables] = useState([])
-  const [table, setTable] = useState({})
-  const [showTable, setShowTable] = useState('')
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
-
+  const [tables, setTables] = useState([]) 
+  const [isLoggedIn, setIsLoggedIn] = useState(true) 
 
   const fetchTables = () => {
     console.log('fetching .....')
-    axios
+    axios 
       .get(endpoint + 'all')
       .then(body => {
         console.log('TABLES', body.data)
@@ -55,10 +44,7 @@ const App = () => {
           <Row>
             <Link to='/'>
               <Button className='linkbuttons' variant="light" tables={tables}>Home</Button>
-            </Link>
-            {/* <Link to='/showTables'>
-              <Button className='linkbuttons' variant="light">Show Tables</Button>
-            </Link> */}
+            </Link> 
             <Link to='/tables'>
               <Button className='linkbuttons' variant="light">Tables</Button>
             </Link> 
@@ -66,25 +52,9 @@ const App = () => {
               <Button  className='linkbuttons' variant="light" onClick={() => setIsLoggedIn(!isLoggedIn)}>{isLoggedIn ? 'Logout' : 'Login'}</Button>
             </Link>
           </Row>
-          <Route exact path='/' render={() => <Home />} />
-          {/* <Route
-            path='/showTables'
-            render={() => (
-              <ShowTable
-                table={table}
-                setTable={setTable}
-                tables={tables}
-                showTable={showTable}
-                setShowTable={setShowTable}
-              />
-            )}
-          /> */}
-          <Route path='/tables' render={() => <Tables
-            table={table}
-            setTable={setTable}
-            tables={tables}
-            showTable={showTable}
-            setShowTable={setShowTable}
+          <Route exact path='/' render={() => <Home />} /> 
+          <Route path='/tables' render={() => <Tables 
+            tables={tables} 
             fetchTables={fetchTables}
           />} />
         </div>
