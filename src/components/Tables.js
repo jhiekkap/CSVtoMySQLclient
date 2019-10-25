@@ -13,38 +13,29 @@ import axios from 'axios'
 import ShowTable from './ShowTable'
 const endpoint = 'http://localhost:3001/'
 
-const Tables = ({ tables, fetchTables }) => {
+const Tables = ({
+  tables,
+  fetchTables,
+  fetchTable,
+  currentTable,
+  setCurrentTable,
+  cloneTables,
+  setCloneTables,
+  toggleColumnsOrder,
+  setToggleColumnsOrder,
+}) => {
   //const [table, setTable] = useState({}) RESET????????????????
-  const [cloneTables, setCloneTables] = useState([])
-  const [currentTable, setCurrentTable] = useState([])
+
   const [tableName, setTableName] = useState('')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('')
   const [replaceCell, setReplaceCell] = useState('')
   //const [findMatch, setFindMatch] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
-  const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
+
   const [showTable, setShowTable] = useState('')
 
-  const fetchTable = table => {
-    console.log('fetching .....')
-    axios
-      .get(endpoint + 'all/' + table)
-      .then(body => {
-        console.log('TABLE:', table, body.data)
-        const { columns, rows } = body.data
-        const wholeTable = [columns].concat(rows)
-        //setTable(wholeTable)  RESET ???????
-        setCurrentTable(wholeTable)
-        setCloneTables([wholeTable])
-        setToggleColumnsOrder(columns.map(col => true))
-      })
-      .catch(error => {
-        console.log(error)
-      })
-  }
-
-  const upDateCurrentTable = newCurrentTable => { 
+  const upDateCurrentTable = newCurrentTable => {
     setCurrentTable(newCurrentTable)
     if (cloneTables.length - 1 === undoIndex) {
       setCloneTables(cloneTables.concat([newCurrentTable]))
@@ -305,7 +296,7 @@ const Tables = ({ tables, fetchTables }) => {
       )}
       <Row>
         <ShowTable
-          currentTable={currentTable} 
+          currentTable={currentTable}
           edit={edit}
           upDateCurrentTable={upDateCurrentTable}
           toggleColumnsOrder={toggleColumnsOrder}
