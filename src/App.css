@@ -19,3 +19,21 @@ input {
 Table {
   margin:5px
 }
+
+@mixin react-md-file-inputs {
+  .md-file-input {
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    width: 0;
+  }
+
+  .md-file-input-container {
+    position: relative;
+
+    .md-btn {
+      display: block;
+    }
+  }
+}

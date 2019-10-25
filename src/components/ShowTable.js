@@ -1,12 +1,11 @@
 import React from 'react'
-import { Table } from 'react-bootstrap'
+import { Table, Row } from 'react-bootstrap' 
 
 const ShowTable = ({
   edit,
   currentTable,
   upDateCurrentTable,
-  findCell,
-  handleInputCell,
+  findCell, 
   toggleColumnsOrder,
   setToggleColumnsOrder,
 }) => {
@@ -47,7 +46,7 @@ const ShowTable = ({
     console.log('HIDING COL!!!!!')
     const newCurrentTable = currentTable.map(row =>
       row.filter((col, c) => c !== Col)
-    ) 
+    )
     upDateCurrentTable(newCurrentTable)
   }
 
@@ -63,50 +62,60 @@ const ShowTable = ({
     upDateCurrentTable(newCurrentTable)
   }
 
+  const handleInputCell = (value, Row, Col) => {
+    console.log(value, Row, Col)
+    const newCurrentTable = currentTable.map((row, r) =>
+      r === Row ? row.map((cell, c) => (c === Col ? value : cell)) : row
+    )
+    upDateCurrentTable(newCurrentTable)
+  }
+
   return (
-    <Table striped bordered hover>
-      {currentTable && (
-        <tbody>
-          {edit && (
-            <tr>
-              <td></td>
-              {currentTable[0].map((col, c) => (
-                <td key={c} onClick={() => handleHideColumn(c)}>
-                  x
-                </td>
-              ))}
-            </tr>
-          )}
-          {currentTable.map((row, r) => (
-            <tr key={r}>
-              {edit && <td onClick={() => handleHideRow(r)}>x</td>}
-              {row.map((cell, c) => (
-                <td
-                  style={{
-                    backgroundColor: cell === findCell && 'hotpink',
-                  }}
-                  key={c}
-                >
-                  {edit ? (
-                    <input
-                      type='text'
-                      value={cell === null ? '' : cell}
-                      onChange={({ target }) =>
-                        handleInputCell(target.value, r, c)
-                      }
-                    />
-                  ) : r === 0 ? (
-                    <u onClick={() => handleSortColumn(c)}>{cell}</u>
-                  ) : (
-                    cell
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      )}
-    </Table>
+    <Row>
+      <Table striped bordered hover>
+        {currentTable && (
+          <tbody>
+            {edit && (
+              <tr>
+                <td></td>
+                {currentTable[0].map((col, c) => (
+                  <td key={c} onClick={() => handleHideColumn(c)}>
+                    x
+                  </td>
+                ))}
+              </tr>
+            )}
+            {currentTable.map((row, r) => (
+              <tr key={r}>
+                {edit && <td onClick={() => handleHideRow(r)}>x</td>}
+                {row.map((cell, c) => (
+                  <td
+                    style={{
+                      backgroundColor: cell === findCell && 'hotpink',
+                    }}
+                    key={c}
+                  >
+                    {edit ? (
+                      <input
+                        type='text'
+                        value={cell === null ? '' : cell}
+                        onChange={({ target }) =>
+                          handleInputCell(target.value, r, c)
+                        }
+                      />
+                    ) : r === 0 ? (
+                      <u onClick={() => handleSortColumn(c)}>{cell}</u>
+                    ) : (
+                      cell
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        )}
+      </Table>
+    </Row>
   )
 }
 
