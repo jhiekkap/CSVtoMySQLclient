@@ -26,9 +26,9 @@ const ShowTable = ({
     const columnSort = (a, b) => {
       console.log(toggleColumnsOrder[col] ? 'nouseva' : 'laskeva')
       if (toggleColumnsOrder[col]) {
-        return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0
+        return a[col] < b[col] ? -1 : a[col] > b[col] ? 1 : 0  //NOUSEVA
       } else {
-        return a[col] > b[col] ? -1 : a[col] < b[col] ? 1 : 0
+        return a[col] > b[col] ? -1 : a[col] < b[col] ? 1 : 0  //LASKEVA
       }
     }
     return currentTableContents.sort(columnSort)
@@ -62,7 +62,7 @@ const ShowTable = ({
     upDateCurrentTable(newCurrentTable)
   }
 
-  const handleInputCell = (value, Row, Col) => {
+  const handleInputCell = (value, Row, Col) => {    ///KÄSITTELE SOLUMUUTOKSET
     console.log(value, Row, Col)
     const newCurrentTable = currentTable.map((row, r) =>
       r === Row ? row.map((cell, c) => (c === Col ? value : cell)) : row

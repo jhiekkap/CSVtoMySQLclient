@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import readXlsxFile from 'read-excel-file'
-import {  Container, Row } from 'react-bootstrap'
+import { Container, Row } from 'react-bootstrap'
 import axios from 'axios'
 import ShowTable from './ShowTable'
 import FileForm from './FileForm'
 import EditForm from './EditForm'
-import cleanName from './../utils/helpers'
+import cleanName, { cleanFile } from './../utils/helpers'
 const endpoint = 'http://localhost:3001/'
 
 const Tables = ({
@@ -23,7 +23,6 @@ const Tables = ({
   const [tableName, setTableName] = useState('')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('') 
-  //const [findMatch, setFindMatch] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
   const [showTable, setShowTable] = useState('')
 
@@ -48,55 +47,34 @@ const Tables = ({
     const file = document.getElementById('uploadedFile').files[0]
     const type = file.type
     const name = cleanName(file.name.split('.')[0])
-    if (type === 'text/csv') {
+    if (type === 'text/csv') {      /////JOS CSV
       console.log(type, name, file)
       setTableName(name)
       const reader = new FileReader()
 
       reader.onload = e => {
         let text = e.target.result
-        text = text.replace(/Ã¤/g, 'ä')
-        text = text.replace(/Ã¶/g, 'ö')
-        const uploadedRows = text.split('\n')
-        const delimiter =
-          uploadedRows[0].split(';').length > uploadedRows[0].split(',').length
-            ? ';'
-            : ','
-        let CSVrows = []
-        uploadedRows.forEach(row => CSVrows.push(row.trim().split(delimiter)))
-
-        let cleanerCSV = CSVrows.filter(row => row.length > 1)
-        while (true) {
-          let lastCol = cleanerCSV[0][cleanerCSV[0].length - 1]
-          if (lastCol === '' || lastCol.length < 2) {
-            cleanerCSV = cleanerCSV.map(row => {
-              let rowToPop = row
-              rowToPop.pop()
-              return rowToPop
-            })
-          } else {
-            break
-          }
-        }
-        console.log(cleanerCSV)
-        setCurrentTable(cleanerCSV)
-        setCloneTables([cleanerCSV])
-        const columns = cleanerCSV[0]
-        setToggleColumnsOrder(columns.map(col => false))
-        //cleanerCSV[1].forEach(cell => console.log(!isNaN(cell)))
+        const cleanerCSV = cleanFile(text)
+        createNewCurrentTable(cleanerCSV) 
       }
 
       reader.readAsText(file)
-    } else {
+    } else {                      ////////JOS JOKU MUU (EXCEL...)
       console.log('LOADING EXCEL...')
       readXlsxFile(file).then(rows => {
         console.log(rows)
-        setCurrentTable(rows)
-        setCloneTables([rows])
-        setTableName(name)
-        console.log('DONE!')
+        createNewCurrentTable(rows) 
       })
     }
+  }
+
+  const createNewCurrentTable = table => {
+    setCurrentTable(table)
+    setCloneTables([table])
+    const columns = table[0]
+    console.log('COLUMNS', columns)
+    columns && setToggleColumnsOrder(columns.map(col => true)) 
+    //table[1].forEach(cell => console.log(!isNaN(cell)))
   }
 
   const handleSaveFile = async () => {
@@ -112,9 +90,9 @@ const Tables = ({
           type: isNaN(currentTable[0][i]) ? 'varchar(256)' : 'int',
         }))
         const table = currentTable.slice(1)
-        console.log('TABLE CONTENTS', table) 
+        console.log('TABLE CONTENTS', table)
         try {
-          const createResponse = await axios.post(endpoint + 'create', {
+          const createResponse = await axios.post(endpoint + 'create', { ///LUO TAULU
             tableName,
             columns,
             table,
@@ -140,7 +118,7 @@ const Tables = ({
       alert('Updating existing databases not yet possible.')
     }
   }
-  
+
   return (
     <Container>
       <FileForm
@@ -175,7 +153,7 @@ const Tables = ({
           upDateCurrentTable={upDateCurrentTable}
           toggleColumnsOrder={toggleColumnsOrder}
           setToggleColumnsOrder={setToggleColumnsOrder}
-          findCell={findCell} 
+          findCell={findCell}
         />
       </Row>
     </Container>
