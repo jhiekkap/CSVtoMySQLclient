@@ -39,63 +39,79 @@ const Studies = ({
     tablesOfStudies.forEach(table => fetchTable(table[0]))
   }, [])
 
-  const printMeter = meter => {
-    console.log('PRINTTAA METRI', meter)
+  const myAverageValue = (district, meter) => {
+    let allPoints
+    let allPointsSum
+    if (!meter.int) {
+      allPoints = Object.entries(meter.points)
+      allPointsSum = allPoints
+        .map(([key, value]) => value)
+        .reduce((a, b) => a + b)
+      console.log('ALL POINTS', allPoints, allPointsSum)
+    }
+
+    console.log(uploadedTables.length, 'TAULUA LADATTU TUTKIMUKSEEN')
+    const table = uploadedTables.find(table => table.name === meter.table)
+      .content
+    const valueCol = table[0].indexOf(meter.col)
+    const distCol = table[0].indexOf('Kaupunginosa')
+
+    const myValues = table
+      .filter(row => row[distCol] === district.name)
+      .map((row, r) => row[valueCol])
+    console.log('MY VALUES', district.name, myValues)
+    const allDistricts = [
+      ...new Set(table.map((row, r) => r > 0 && row[distCol])),
+    ].filter(dist => typeof dist === 'string')
+    console.log('ALL DISTRICTS', allDistricts)
+    const allDistrictsGrouped = allDistricts.map(dist =>
+      table.filter(row => row[distCol] === dist)
+    )
+    console.log('ALLDISTRICTSGROUPED', allDistrictsGrouped)
+
+    const mySum = myValues
+      .map(value => (meter.int ? value : meter.points[value]))
+      .reduce((a, b) => a + b)
+    const myAVG = mySum / myValues.length
+    console.log(
+      'MY SUM AND AVG AND VALUES',
+      district.name,
+      mySum,
+      myAVG,
+      myValues
+    )
+    const max = Math.max(
+      ...myValues.map(value => (meter.int ? value : meter.points[value]))
+    )
+    console.log('MAX', max)
+    return { myAVG, valueCol, allDistrictsGrouped, max }
+  }
+
+  const meterPoints = (district, meter) => {
+    const { myAVG, valueCol, allDistrictsGrouped } = myAverageValue(
+      district,
+      meter
+    )
+
+    const allAVGs = allDistrictsGrouped.map(dist => {
+      const distAVG =
+        dist
+          .map(row => (meter.int ? row[valueCol] : meter.points[row[valueCol]]))
+          .reduce((a, b) => a + b) / dist.length
+      return distAVG
+    })
+    console.log('ALLAVGs', allAVGs)
+    const allAVG = allAVGs.reduce((a, b) => a + b) / allAVGs.length
+    const importancePercent = (1 / 5) * meter.importance
+    const points = (myAVG / allAVG) * importancePercent
+
+    return { allAVG, points }
   }
 
   const allPoints = (study, district) => {
-    const pointsList = study.meters.map(meter => {
-      printMeter(meter)
-      let allPoints
-      let allPointsSum
-      if (!meter.int) {
-        allPoints = Object.entries(meter.points)
-        allPointsSum = allPoints
-          .map(([key, value]) => value)
-          .reduce((a, b) => a + b)
-        console.log('ALL POINTS', allPoints, allPointsSum)
-      }
-
-      console.log(uploadedTables.length, 'TAULUA LADATTU TUTKIMUKSEEN')
-      const table = uploadedTables.find(table => {
-        console.log(table.name, meter.table, meter)
-        return table.name === meter.table
-      }).content
-      const valueCol = table[0].indexOf(meter.col)
-      const distCol = table[0].indexOf('Kaupunginosa')
-      const myValues = table
-        .filter(row => row[distCol] === district.name)
-        .map((row, r) => row[valueCol])
-      console.log('MY VALUES', district.name, myValues)
-      const allDistricts = [
-        ...new Set(table.map((row, r) => r > 0 && row[distCol])),
-      ].filter(dist => typeof dist === 'string')
-      console.log('ALL DISTRICTS', allDistricts)
-      const allDistrictsGrouped = allDistricts.map(dist =>
-        table.filter(row => row[distCol] === dist)
-      )
-      console.log('ALLDISTRICTSGROUPED', allDistrictsGrouped)
-
-      const mySum = myValues
-        .map(value => (meter.int ? value : meter.points[value]))
-        .reduce((a, b) => a + b)
-      const myAVG = mySum / myValues.length
-      console.log('MY SUM AND AVG', district.name, mySum, myAVG)
-
-      const allAVGs = allDistrictsGrouped.map(dist => {
-        const distAVG =
-          dist
-            .map(row =>
-              meter.int ? row[valueCol] : meter.points[row[valueCol]]
-            )
-            .reduce((a, b) => a + b) / dist.length
-        return distAVG
-      })
-      console.log('ALLAVGs', allAVGs)
-      const allAVG = allAVGs.reduce((a, b) => a + b) / allAVGs.length
-      const importancePercent = (1 / 5) * meter.importance
-      return (myAVG / allAVG) * importancePercent
-    })
+    const pointsList = study.meters.map(
+      meter => meterPoints(district, meter).points
+    )
     return pointsList.reduce((a, b) => a + b)
   }
 
@@ -147,26 +163,47 @@ const Studies = ({
                           {meter.show && (
                             <div>
                               <Button variant='light'>EDIT</Button>
-                              <Table striped bordered hover>
-                                <thead>
-                                  <tr>
-                                    <td>ALUE</td>
-                                    <td>ARVO</td>
-                                    <td>PISTEET</td>
-                                    <td>PAINOTUS</td>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {study.districts.map(dist => (
-                                    <tr>
-                                      <td>{dist.name}</td>
-                                      <td>keskiarvo {meter.unit}</td>
-                                      <td>pisteet</td>
-                                      <td>{meter.importance} / 5</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </Table>
+                              <span> PAINOTUS {meter.importance} / 5</span>
+                              <Row>
+                                <Col md={6}>
+                                  <Table striped bordered hover>
+                                    <thead>
+                                      <tr>
+                                        <td>ALUE</td>
+                                        <td>ARVO</td>
+                                        <td>PISTEET</td>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {study.districts.map(dist => (
+                                        <tr>
+                                          <td>{dist.name}</td>
+                                          <td>
+                                            keskiarvo{' '}
+                                            {myAverageValue(
+                                              dist,
+                                              meter
+                                            ).myAVG.toFixed(2)}{' '}
+                                            {meter.int && meter.unit} /{' '}
+                                            {meterPoints(
+                                              dist,
+                                              meter
+                                            ).allAVG.toFixed(2)}
+                                          </td>
+                                          <td>
+                                            pisteet{' '}
+                                            {meterPoints(
+                                              dist,
+                                              meter
+                                            ).points.toFixed(2)}{' '}
+                                            / 1
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </Table>
+                                </Col>
+                              </Row>
                             </div>
                           )}
                         </div>
