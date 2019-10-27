@@ -17,7 +17,7 @@ const FileForm = ({
       <DropdownButton
         variant='light'
         id='dropdown-basic-button'
-        title={!showTable ? 'CHOOSE TABLE' : showTable}
+        title={!showTable ? 'VALITSE TAULU' : showTable}
       >
         {tables.map((table, i) => (
           <Dropdown.Item
@@ -50,7 +50,7 @@ const FileForm = ({
       </Form>
       {currentTable.length > 0 && (
         <Button variant='light' onClick={handleSaveFile}>
-          SAVE TO DATABASE
+          SAVE
         </Button>
       )}
     </Row>

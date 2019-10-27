@@ -77,10 +77,10 @@ const EditForm = ({
           onChange={handleReplaceCell}
         />
         <Button variant='light' onClick={handleUndo}>
-          Undo
+          UNDO
         </Button>
         <Button variant='light' onClick={handleRedo}>
-          Redo
+          REDO
         </Button>
       </Form>
     </Row>

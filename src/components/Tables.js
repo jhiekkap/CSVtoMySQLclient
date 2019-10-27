@@ -5,13 +5,13 @@ import axios from 'axios'
 import ShowTable from './ShowTable'
 import FileForm from './FileForm'
 import EditForm from './EditForm'
-import cleanName, { cleanFile } from './../utils/helpers'
+import {cleanName, cleanFile } from './../utils/helpers'
 const endpoint = 'http://localhost:3001/'
 
-const Tables = ({
+const Tables = ({ 
   tables,
   fetchTables,
-  fetchTable,
+  fetchTable, 
   currentTable,
   setCurrentTable,
   cloneTables,
@@ -19,7 +19,7 @@ const Tables = ({
   toggleColumnsOrder,
   setToggleColumnsOrder,
 }) => {
-  //const [table, setTable] = useState({}) RESET????????????????
+
   const [tableName, setTableName] = useState('')
   const [edit, setEdit] = useState(false)
   const [findCell, setFindCell] = useState('') 
@@ -71,10 +71,8 @@ const Tables = ({
   const createNewCurrentTable = table => {
     setCurrentTable(table)
     setCloneTables([table])
-    const columns = table[0]
-    console.log('COLUMNS', columns)
-    columns && setToggleColumnsOrder(columns.map(col => true)) 
-    //table[1].forEach(cell => console.log(!isNaN(cell)))
+    const columns = table[0] 
+    columns && setToggleColumnsOrder(columns.map(col => true))  
   }
 
   const handleSaveFile = async () => {
@@ -87,7 +85,7 @@ const Tables = ({
       ) {
         const columns = currentTable[0].map((col, i) => ({
           name: cleanName(col),
-          type: isNaN(currentTable[0][i]) ? 'varchar(256)' : 'int',
+          type: isNaN(currentTable[1][i]) ? 'varchar(256)' : 'int',
         }))
         const table = currentTable.slice(1)
         console.log('TABLE CONTENTS', table)

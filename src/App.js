@@ -4,8 +4,38 @@ import './App.css'
 import { Button, Container, Row } from 'react-bootstrap'
 import Home from './components/Home'
 import Tables from './components/Tables'
+import Studies from './components/Studies'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 const endpoint = 'http://localhost:3001/'
+
+const studs = [
+  {
+    name: 'Minne rakennettaisiin pilvenpiirtäjä?',
+    story: 'Järvenpäälle uusi sydän',
+    districts: [{ name: 'Kyrölä' }, { name: 'Keskusta' }],
+    meters: [
+      {
+        name: 'Myytyjen asuntojen neliöhinta vuoden sisällä',
+        table: 'ToteutuneetAsuntoKaupat',
+        col: 'VelatonNeliöhinta',
+        importance: 3,
+        int: true
+      },
+      {
+        name: 'Myytyjen asuntojen kunto vuoden sisällä',
+        table: 'ToteutuneetAsuntoKaupat',
+        col: 'Kunto',
+        importance: 3,
+        int: false,
+        points: {
+          Huono: 1,
+          Tyyd: 2,
+          Hyvä: 3,
+        },
+      },
+    ],
+  },
+]
 
 const App = () => {
   const [tables, setTables] = useState([])
@@ -13,18 +43,21 @@ const App = () => {
   const [cloneTables, setCloneTables] = useState([])
   const [currentTable, setCurrentTable] = useState([])
   const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
+  const [table, setTable] = useState({})
+  const [studies, setStudies] = useState(studs)
+  const [uploadedTables, setUploadedTables] = useState([])
+  //const [meters, setMeters] = useState(metres)
 
-  const fetchTables = () => {
+  const fetchTables = async () => {
     console.log('fetching .....')
-    axios
-      .get(endpoint + 'all')
-      .then(body => {
-        console.log('TABLES', body.data)
-        setTables(body.data)
-      })
-      .catch(error => {
-        console.log(error)
-      })
+    try {
+      const body = await axios.get(endpoint + 'all')
+      console.log('TABLES', body.data)
+      setTables(body.data)
+      return body.data
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   useEffect(() => {
@@ -39,10 +72,11 @@ const App = () => {
         console.log('TABLE:', table, body.data)
         const { columns, rows } = body.data
         const wholeTable = [columns].concat(rows)
-        //setTable(wholeTable)  RESET ???????
+        setTable(wholeTable)
         setCurrentTable(wholeTable)
         setCloneTables([wholeTable])
         setToggleColumnsOrder(columns.map(col => true))
+        setUploadedTables(uploadedTables.concat(wholeTable))
       })
       .catch(error => {
         console.log(error)
@@ -56,12 +90,17 @@ const App = () => {
           <Row>
             <Link to='/'>
               <Button className='linkbuttons' variant='light' tables={tables}>
-                Home
+                KOTI
               </Button>
             </Link>
             <Link to='/tables'>
               <Button className='linkbuttons' variant='light'>
-                Tables
+                TAULUT
+              </Button>
+            </Link>
+            <Link to='/studies'>
+              <Button className='linkbuttons' variant='light'>
+                TUTKIMUKSET
               </Button>
             </Link>
             <Link to='/login'>
@@ -70,7 +109,7 @@ const App = () => {
                 variant='light'
                 onClick={() => setIsLoggedIn(!isLoggedIn)}
               >
-                {isLoggedIn ? 'Logout' : 'Login'}
+                {isLoggedIn ? 'KIRJAUDU ULOS' : 'KIRJAUDU SISÄÄN'}
               </Button>
             </Link>
           </Row>
@@ -98,6 +137,24 @@ const App = () => {
                 setCloneTables={setCloneTables}
                 toggleColumnsOrder={toggleColumnsOrder}
                 setToggleColumnsOrder={setToggleColumnsOrder}
+              />
+            )}
+          />
+          <Route
+            path='/studies'
+            render={() => (
+              <Studies
+                table={table}
+                tables={tables}
+                fetchTables={fetchTables}
+                fetchTable={fetchTable}
+                currentTable={currentTable}
+                setCurrentTable={setCurrentTable}
+                /* meters={meters}
+                setMeters={setMeters} */
+                studies={studies}
+                setStudies={setStudies}
+                uploadedTables={uploadedTables}
               />
             )}
           />
