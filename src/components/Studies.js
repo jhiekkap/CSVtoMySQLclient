@@ -25,38 +25,61 @@ const Studies = ({
   const [showMeterForm, setShowMeterForm] = useState(false)
 
   useEffect(() => {
-    const tablesOfStudies = [...new Set([].concat(studies.map(study => [...new Set(study.meters.map(meter => meter.table))])))]
-    console.log(tablesOfStudies,'TAULUT TUTKIMUKSISSA')
-    tablesOfStudies.forEach(table => console.log('TAULU:', table))
+    const tablesOfStudies = [
+      ...new Set(
+        [].concat(
+          studies.map(study => [
+            ...new Set(study.meters.map(meter => meter.table)),
+          ])
+        )
+      ),
+    ]
+    console.log(tablesOfStudies.length, 'TAULUA TUTKIMUKSISSA')
+    tablesOfStudies.forEach(table => fetchTable(table[0]))
   }, [])
 
   const countPoints = (study, district) => {
     const pointsList = study.meters.map(meter => {
       const importancePercent = (1 / 5) * meter.importance
+      console.log(uploadedTables.length, 'TAULUA LADATTU TUTKIMUKSEEN')
       const table = uploadedTables.find(table => table.name === meter.table)
+        .content
       if (meter.int) {
+        console.log(table[0])
         const valueCol = table[0].indexOf(meter.col)
-        const distCol = table[0].indexOf(district.name)
-        const values = table
-          .map((row, r) => r > 0 && row(valueCol))
+        const distCol = table[0].indexOf('Kaupunginosa')
+        console.log('VALUECOL', valueCol, meter.col)
+        console.log('DISTCOL', distCol, district.name)
+        const myValues = table
           .filter(row => row[distCol] === district.name)
-        const mySum = values.reduce((total, num) => {
+          .map((row, r) => r > 0 && row[valueCol])
+        const mySum = myValues.reduce((total, num) => {
           return total + num
         })
-        const myAVG = mySum / valueCol.length
-
-        //const allValues = table.map((row,r) => row > 0 && row(valueCol))
-        const allDistricts = new Set(
-          table.map((row, r) => row > 0 && row[distCol])
+        const myAVG = mySum / myValues.length
+        const allDistricts = [
+          ...new Set(table.map((row, r) => r > 0 && row[distCol])),
+        ].filter(dist => typeof dist === 'string')
+        console.log('MYAVG AND ALL DISTRICTS', myAVG, allDistricts)
+        const allDistrictsGrouped = allDistricts.map(dist =>
+          table.filter(row => row[distCol] === dist)
         )
-        const allAVG = allDistricts.map(
-          dist =>
-            table
-              .filter(row => row[distCol] === dist)
+        console.log('ALLDISTRICTSGROOUPED', allDistrictsGrouped)
+        const allAVGs = allDistrictsGrouped.map(dist => {
+          const distAVG =
+            dist
+              .map(row => row[valueCol])
               .reduce((total, num) => {
                 return total + num
-              }) / allDistricts.length
-        )
+              }) / dist.length
+          //console.log('AVGs', distAVG)
+          return distAVG
+        })
+        console.log('ALLAVGs', allAVGs)
+        const allAVG = allAVGs.reduce((total, num) => {
+          return total + num
+        }) / allAVGs.length
+         
         return (myAVG / allAVG) * importancePercent
       } else {
         return 0.5
@@ -69,45 +92,47 @@ const Studies = ({
 
   return (
     <Container>
-      {uploadedTables.length > 0 && <Row>
-        <Col>
-          <h4>TUTKIMUKSET</h4>
-          <ul>
-            {studies.map((study, i) => (
-              <li key={i}>
-                {study.name} <br /> - {study.story}
-                <p>
-                  VERTAILUSSA:{' '}
-                  {study.districts.map(
-                    dist => dist.name + ': ' + countPoints(study, dist) + '  '
-                  )}
-                </p>
-                <p>MITTARIT:</p>
-                <Table>
-                  <tbody>
-                    {study.meters.map((meter, m) => (
-                      <tr key={m}>
-                        <td>{meter.name}</td>
-                      </tr>
-                    ))}
-                    {!showMeterForm && (
-                      <tr>
-                        <td onClick={() => setShowMeterForm(true)}>
-                          LISÄÄ MITTARI
-                        </td>
-                      </tr>
+      {uploadedTables.length > 0 && (
+        <Row>
+          <Col>
+            <h4>TUTKIMUKSET</h4>
+            <ul>
+              {studies.map((study, i) => (
+                <li key={i}>
+                  {study.name} <br /> - {study.story}
+                  <p>
+                    VERTAILUSSA:{' '}
+                    {study.districts.map(
+                      dist => dist.name + ': ' + countPoints(study, dist).toFixed(2) + '  '
                     )}
-                  </tbody>
-                </Table>
-                {showMeterForm && (
-                  <MeterForm setShowMeterForm={setShowMeterForm} />
-                )}
-              </li>
-            ))}
-            <li>LISÄÄ TUTKIMUS</li>
-          </ul>
-        </Col>
-      </Row>}
+                  </p>
+                  <p>MITTARIT:</p>
+                  <Table>
+                    <tbody>
+                      {study.meters.map((meter, m) => (
+                        <tr key={m}>
+                          <td>{meter.name}</td>
+                        </tr>
+                      ))}
+                      {!showMeterForm && (
+                        <tr>
+                          <td onClick={() => setShowMeterForm(true)}>
+                            LISÄÄ MITTARI
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </Table>
+                  {showMeterForm && (
+                    <MeterForm setShowMeterForm={setShowMeterForm} />
+                  )}
+                </li>
+              ))}
+              <li>LISÄÄ TUTKIMUS</li>
+            </ul>
+          </Col>
+        </Row>
+      )}
 
       {/* <Row>
         <DropdownButton

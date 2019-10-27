@@ -17,15 +17,15 @@ const studs = [
       {
         name: 'Myytyjen asuntojen neliöhinta vuoden sisällä',
         table: 'ToteutuneetAsuntoKaupat',
-        col: 'VelatonNeliöhinta',
-        importance: 3,
+        col: 'VelatonNelihinta',
+        importance: 4,
         int: true
       },
       {
         name: 'Myytyjen asuntojen kunto vuoden sisällä',
         table: 'ToteutuneetAsuntoKaupat',
         col: 'Kunto',
-        importance: 3,
+        importance: 4,
         int: false,
         points: {
           Huono: 1,
@@ -76,7 +76,7 @@ const App = () => {
         setCurrentTable(wholeTable)
         setCloneTables([wholeTable])
         setToggleColumnsOrder(columns.map(col => true))
-        setUploadedTables(uploadedTables.concat(wholeTable))
+        setUploadedTables(uploadedTables.concat({name:table, content:wholeTable}))
       })
       .catch(error => {
         console.log(error)
