@@ -15,23 +15,38 @@ const studs = [
     districts: [{ name: 'Kyrölä' }, { name: 'Keskusta' }],
     meters: [
       {
-        name: 'Myytyjen asuntojen neliöhinta vuoden sisällä',
+        name: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',
         table: 'ToteutuneetAsuntoKaupat',
         col: 'VelatonNelihinta',
+        unit: '€',
         importance: 4,
-        int: true
+        int: true,
+        points: [],
+        show:false
       },
       {
         name: 'Myytyjen asuntojen kunto vuoden sisällä',
         table: 'ToteutuneetAsuntoKaupat',
         col: 'Kunto',
+        unit: '',
         importance: 4,
         int: false,
         points: {
-          Huono: 1,
-          Tyyd: 2,
-          Hyvä: 3,
+          huono: 1,
+          'tyyd.': 2,
+          hyvä: 3,
         },
+        show:false
+      },
+      {
+        name: 'Myytyjen asuntojen rakennusvuosi',
+        table: 'ToteutuneetAsuntoKaupat',
+        col: 'Rakennusvuosi',
+        unit: '',
+        importance: 2,
+        int: true,
+        points: [],
+        show:false
       },
     ],
   },
