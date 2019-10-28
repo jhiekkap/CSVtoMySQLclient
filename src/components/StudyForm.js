@@ -19,11 +19,11 @@ function StudyForm() {
   
     return (
       <> 
-        <Row onClick={handleShow}> + UUSI TUTKIMUS</Row>
+        <Row onClick={handleShow}> + UUSI HANKE</Row>
   
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
-            <Modal.Title>UUSI TUTKIMUS</Modal.Title>
+            <Modal.Title>UUSI HANKE</Modal.Title>
           </Modal.Header>
           <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
           <Modal.Footer>

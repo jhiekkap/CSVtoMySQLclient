@@ -113,7 +113,7 @@ const App = () => {
                 TAULUT
               </Button>
             </Link>
-            <Link to='/studies'>
+            <Link to='/projects'>
               <Button className='linkbuttons' variant='light'>
                 TUTKIMUKSET
               </Button>
@@ -156,7 +156,7 @@ const App = () => {
             )}
           />
           <Route
-            path='/studies'
+            path='/projects'
             render={() => (
               <Studies
                 table={table}

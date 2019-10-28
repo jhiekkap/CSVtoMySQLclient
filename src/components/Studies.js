@@ -133,7 +133,7 @@ const Studies = ({
       {uploadedTables.length > 0 && (
         <Row>
           <Col>
-            <h4>TUTKIMUKSET</h4>
+            <h4>HANKKEET</h4>
             <ul>
               {studies.map((study, s) => (
                 <li key={s}>
