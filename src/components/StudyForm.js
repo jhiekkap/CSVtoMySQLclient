@@ -11,7 +11,7 @@ import {
 } from 'react-bootstrap'
  
  
-function MeterForm() {
+function StudyForm() {
     const [show, setShow] = useState(false);
   
     const handleClose = () => setShow(false);
@@ -19,11 +19,11 @@ function MeterForm() {
   
     return (
       <> 
-        <Row onClick={handleShow}> + UUSI MITTARI</Row>
+        <Row onClick={handleShow}> + UUSI TUTKIMUS</Row>
   
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
-            <Modal.Title>UUSI MITTARI</Modal.Title>
+            <Modal.Title>UUSI TUTKIMUS</Modal.Title>
           </Modal.Header>
           <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
           <Modal.Footer>
@@ -39,4 +39,4 @@ function MeterForm() {
     );
   }
 
-  export default MeterForm 
+  export default StudyForm 

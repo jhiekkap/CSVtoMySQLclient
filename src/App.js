@@ -12,7 +12,7 @@ const studs = [
   {
     name: 'Minne rakennettaisiin pilvenpiirtäjä?',
     story: 'Järvenpäälle uusi sydän',
-    districts: [{ name: 'Kyrölä' }, { name: 'Jamppa' }],
+    districts: [{ name: 'Keskusta' }, { name: 'Kyrölä' }],
     meters: [
       {
         name: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',

@@ -9,14 +9,13 @@ import {
   Button,
 } from 'react-bootstrap'
 import MeterForm from './MeterForm'
+import StudyForm from './StudyForm'
+import EditMeterForm from './EditMeterForm'
 const Studies = ({
   table,
   tables,
   fetchTables,
-  fetchTable,
-  currentTable,
-  setCurrentTable,
-
+  fetchTable, 
   /* meters,
   setMeters, */
   studies,
@@ -92,7 +91,6 @@ const Studies = ({
       district,
       meter
     )
-
     const allAVGs = allDistrictsGrouped.map(dist => {
       const distAVG =
         dist
@@ -162,7 +160,8 @@ const Studies = ({
                           </tr>
                           {meter.show && (
                             <div>
-                              <Button variant='light'>EDIT</Button>
+                              {/* <Button variant="outline-secondary">EDIT</Button> */}
+                              <EditMeterForm />
                               <span> PAINOTUS {meter.importance} / 5</span>
                               <Row>
                                 <Col md={6}>
@@ -170,7 +169,7 @@ const Studies = ({
                                     <thead>
                                       <tr>
                                         <td>ALUE</td>
-                                        <td>ARVO</td>
+                                        <td>ARVO / JÄRVENPÄÄN KA</td>
                                         <td>PISTEET</td>
                                       </tr>
                                     </thead>
@@ -183,12 +182,13 @@ const Studies = ({
                                             {myAverageValue(
                                               dist,
                                               meter
-                                            ).myAVG.toFixed(2)}{' '}
-                                            {meter.int && meter.unit} /{' '}
+                                            ).myAVG.toFixed(2)}
+                                            {meter.int && meter.unit} / {' '}
                                             {meterPoints(
                                               dist,
                                               meter
                                             ).allAVG.toFixed(2)}
+                                            {meter.int && meter.unit}
                                           </td>
                                           <td>
                                             pisteet{' '}
@@ -208,22 +208,22 @@ const Studies = ({
                           )}
                         </div>
                       ))}
-                      {!showMeterForm && (
+                      
                         <tr>
-                          <td onClick={() => setShowMeterForm(true)}>
-                            LISÄÄ MITTARI
+                          <td>
+                          <MeterForm />
                           </td>
                         </tr>
-                      )}
+                       
                     </tbody>
-                  </Table>
-                  {showMeterForm && (
-                    <MeterForm setShowMeterForm={setShowMeterForm} />
-                  )}
+                  </Table> 
+                    
+                  
                 </li>
               ))}
-              <li>LISÄÄ TUTKIMUS</li>
+             
             </ul>
+            <StudyForm />
           </Col>
         </Row>
       )}
