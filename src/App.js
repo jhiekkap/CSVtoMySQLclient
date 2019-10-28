@@ -4,49 +4,45 @@ import './App.css'
 import { Button, Container, Row } from 'react-bootstrap'
 import Home from './components/Home'
 import Tables from './components/Tables'
-import Studies from './components/Studies'
+import Products from './components/Products'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 const endpoint = 'http://localhost:3001/'
 
 const studs = [
   {
-    name: 'Minne rakennettaisiin pilvenpiirtäjä?',
+    title: 'Minne rakennettaisiin pilvenpiirtäjä?',
     story: 'Järvenpäälle uusi sydän',
-    districts: [{ name: 'Keskusta' }, { name: 'Kyrölä' }],
+    districts: ['Keskusta', 'Kyrölä'],
     meters: [
       {
-        name: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',
+        title: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',
         table: 'ToteutuneetAsuntoKaupat',
         col: 'VelatonNelihinta',
         unit: '€',
-        importance: 4,
-        int: true,
+        importance: 1,
+        number: true,
         points: [],
-        show:false
+        show: false,
       },
       {
-        name: 'Myytyjen asuntojen kunto vuoden sisällä',
+        title: 'Myytyjen asuntojen kunto vuoden sisällä',
         table: 'ToteutuneetAsuntoKaupat',
         col: 'Kunto',
         unit: '',
-        importance: 3,
-        int: false,
-        points: {
-          huono: 1,
-          'tyyd.': 2,
-          hyvä: 3,
-        },
-        show:false
+        importance: 1,
+        number: false,
+        points: ['huono', 'tyyd.', 'hyvä'], 
+        show: false,
       },
       {
-        name: 'Myytyjen asuntojen rakennusvuosi',
+        title: 'Myytyjen asuntojen rakennusvuosi',
         table: 'ToteutuneetAsuntoKaupat',
         col: 'Rakennusvuosi',
         unit: '',
-        importance: 2,
-        int: true,
+        importance: 1,
+        number: true,
         points: [],
-        show:false
+        show: false,
       },
     ],
   },
@@ -59,7 +55,7 @@ const App = () => {
   const [currentTable, setCurrentTable] = useState([])
   const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
   const [table, setTable] = useState({})
-  const [studies, setStudies] = useState(studs)
+  const [products, setProducts] = useState(studs)
   const [uploadedTables, setUploadedTables] = useState([])
   //const [meters, setMeters] = useState(metres)
 
@@ -91,7 +87,9 @@ const App = () => {
         setCurrentTable(wholeTable)
         setCloneTables([wholeTable])
         setToggleColumnsOrder(columns.map(col => true))
-        setUploadedTables(uploadedTables.concat({name:table, content:wholeTable}))
+        setUploadedTables(
+          uploadedTables.concat({ name: table, content: wholeTable })
+        )
       })
       .catch(error => {
         console.log(error)
@@ -115,7 +113,7 @@ const App = () => {
             </Link>
             <Link to='/projects'>
               <Button className='linkbuttons' variant='light'>
-                TUTKIMUKSET
+                HANKKEET
               </Button>
             </Link>
             <Link to='/login'>
@@ -158,7 +156,7 @@ const App = () => {
           <Route
             path='/projects'
             render={() => (
-              <Studies
+              <Products
                 table={table}
                 tables={tables}
                 fetchTables={fetchTables}
@@ -167,8 +165,8 @@ const App = () => {
                 setCurrentTable={setCurrentTable}
                 /* meters={meters}
                 setMeters={setMeters} */
-                studies={studies}
-                setStudies={setStudies}
+                products={products}
+                setProducts={setProducts}
                 uploadedTables={uploadedTables}
               />
             )}

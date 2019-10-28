@@ -12,7 +12,7 @@ const FileForm = ({
   tableName,
   setTableName,
 }) => {
-  return (
+  return ( 
     <Row>
       <DropdownButton
         variant='light'

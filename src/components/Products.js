@@ -9,80 +9,62 @@ import {
   Button,
 } from 'react-bootstrap'
 import MeterForm from './MeterForm'
-import StudyForm from './StudyForm'
+import ProductForm from './ProductForm'
 import EditMeterForm from './EditMeterForm'
-const Studies = ({
+const Products = ({
   table,
   tables,
   fetchTables,
-  fetchTable, 
+  fetchTable,
   /* meters,
   setMeters, */
-  studies,
-  setStudies,
+  products,
+  setProducts,
   uploadedTables,
 }) => {
-  const [showMeterForm, setShowMeterForm] = useState(false)
-
   useEffect(() => {
-    const tablesOfStudies = [
+    const tablesOfProducts = [
       ...new Set(
         [].concat(
-          studies.map(study => [
-            ...new Set(study.meters.map(meter => meter.table)),
+          products.map(product => [
+            ...new Set(product.meters.map(meter => meter.table)),
           ])
         )
       ),
     ]
-    console.log(tablesOfStudies.length, 'TAULUA TUTKIMUKSISSA')
-    tablesOfStudies.forEach(table => fetchTable(table[0]))
+    tablesOfProducts.forEach(table => fetchTable(table[0]))
   }, [])
 
-  const myAverageValue = (district, meter) => {
-    let allPoints
-    let allPointsSum
-    if (!meter.int) {
-      allPoints = Object.entries(meter.points)
-      allPointsSum = allPoints
+  const myAverageValue = (district, meter) => { 
+    /* let allPointsSum
+    if (!meter.number) { 
+      allPointsSum = meter.points
         .map(([key, value]) => value)
         .reduce((a, b) => a + b)
-      console.log('ALL POINTS', allPoints, allPointsSum)
-    }
+    } */
 
-    console.log(uploadedTables.length, 'TAULUA LADATTU TUTKIMUKSEEN')
     const table = uploadedTables.find(table => table.name === meter.table)
       .content
     const valueCol = table[0].indexOf(meter.col)
     const distCol = table[0].indexOf('Kaupunginosa')
 
     const myValues = table
-      .filter(row => row[distCol] === district.name)
+      .filter(row => row[distCol] === district)
       .map((row, r) => row[valueCol])
-    console.log('MY VALUES', district.name, myValues)
     const allDistricts = [
       ...new Set(table.map((row, r) => r > 0 && row[distCol])),
     ].filter(dist => typeof dist === 'string')
-    console.log('ALL DISTRICTS', allDistricts)
     const allDistrictsGrouped = allDistricts.map(dist =>
       table.filter(row => row[distCol] === dist)
     )
-    console.log('ALLDISTRICTSGROUPED', allDistrictsGrouped)
 
     const mySum = myValues
-      .map(value => (meter.int ? value : meter.points[value]))
+      .map(value => (meter.number ? value : meter.points.indexOf(value)))
       .reduce((a, b) => a + b)
     const myAVG = mySum / myValues.length
-    console.log(
-      'MY SUM AND AVG AND VALUES',
-      district.name,
-      mySum,
-      myAVG,
-      myValues
-    )
     const max = Math.max(
-      ...myValues.map(value => (meter.int ? value : meter.points[value]))
+      ...myValues.map(value => (meter.number ? value : meter.points.indexOf(value)))
     )
-    console.log('MAX', max)
     return { myAVG, valueCol, allDistrictsGrouped, max }
   }
 
@@ -91,41 +73,30 @@ const Studies = ({
       district,
       meter
     )
-    const allAVGs = allDistrictsGrouped.map(dist => {
-      const distAVG =
+    const allAVGs = allDistrictsGrouped.map(
+      dist =>
         dist
-          .map(row => (meter.int ? row[valueCol] : meter.points[row[valueCol]]))
+          .map(row => (meter.number ? row[valueCol] : meter.points.indexOf(row[valueCol])))
           .reduce((a, b) => a + b) / dist.length
-      return distAVG
-    })
-    console.log('ALLAVGs', allAVGs)
-    const allAVG = allAVGs.reduce((a, b) => a + b) / allAVGs.length
-    const importancePercent = (1 / 5) * meter.importance
-    const points = (myAVG / allAVG) * importancePercent
+    )
+    const allAVG = allAVGs.reduce((a, b) => a + b) / allAVGs.length 
+    const points = (myAVG / allAVG) * meter.importance
 
     return { allAVG, points }
   }
 
-  const allPoints = (study, district) => {
-    const pointsList = study.meters.map(
+  const allPoints = (product, district) => {
+    const pointsList = product.meters.map(
       meter => meterPoints(district, meter).points
     )
     return pointsList.reduce((a, b) => a + b)
   }
 
-  const handleShowMeter = (studyID, meterID) => {
-    const cloneStudies = [...studies]
-    console.log(
-      'SHOW',
-      studyID,
-      meterID,
-      cloneStudies,
-      cloneStudies[studyID].meters[meterID].show
-    )
-    cloneStudies[studyID].meters[meterID].show = !cloneStudies[studyID].meters[
-      meterID
-    ].show
-    setStudies(cloneStudies)
+  const handleShowMeter = (productID, meterID) => {
+    const cloneProducts = [...products]
+    cloneProducts[productID].meters[meterID].show = !cloneProducts[productID]
+      .meters[meterID].show
+    setProducts(cloneProducts)
   }
 
   return (
@@ -135,32 +106,31 @@ const Studies = ({
           <Col>
             <h4>HANKKEET</h4>
             <ul>
-              {studies.map((study, s) => (
-                <li key={s}>
-                  {study.name} <br /> - {study.story}
+              {products.map((product, p) => (
+                <li key={p}>
+                  {product.title} <br /> - {product.story}
                   <p>
                     VERTAILUSSA:{' '}
-                    {study.districts.map(
+                    {product.districts.map(
                       dist =>
-                        dist.name +
+                        dist +
                         ': ' +
-                        allPoints(study, dist).toFixed(2) +
+                        allPoints(product, dist).toFixed(2) +
                         '  '
                     )}
                   </p>
                   <p>MITTARIT:</p>
                   <Table>
                     <tbody>
-                      {study.meters.map((meter, m) => (
-                        <div>
-                          <tr key={m}>
-                            <td onClick={() => handleShowMeter(s, m)}>
-                              {meter.name}
+                      {product.meters.map((meter, m) => (
+                        <>
+                          <tr key={m} >
+                            <td onClick={() => handleShowMeter(p, m)}>
+                              {meter.title}
                             </td>
                           </tr>
                           {meter.show && (
-                            <div>
-                              {/* <Button variant="outline-secondary">EDIT</Button> */}
+                            <> 
                               <EditMeterForm />
                               <span> PAINOTUS {meter.importance} / 5</span>
                               <Row>
@@ -174,21 +144,21 @@ const Studies = ({
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {study.districts.map(dist => (
+                                      {product.districts.map(dist => (
                                         <tr>
-                                          <td>{dist.name}</td>
+                                          <td>{dist}</td>
                                           <td>
                                             keskiarvo{' '}
                                             {myAverageValue(
                                               dist,
                                               meter
                                             ).myAVG.toFixed(2)}
-                                            {meter.int && meter.unit} / {' '}
+                                            {meter.number && meter.unit} /{' '}
                                             {meterPoints(
                                               dist,
                                               meter
                                             ).allAVG.toFixed(2)}
-                                            {meter.int && meter.unit}
+                                            {meter.number && meter.unit}
                                           </td>
                                           <td>
                                             pisteet{' '}
@@ -204,26 +174,22 @@ const Studies = ({
                                   </Table>
                                 </Col>
                               </Row>
-                            </div>
+                            </>
                           )}
-                        </div>
+                        </>
                       ))}
-                      
-                        <tr>
-                          <td>
-                          <MeterForm />
-                          </td>
-                        </tr>
-                       
+
+                      <tr>
+                        <td>
+                          <MeterForm products={products} tables={tables} />
+                        </td>
+                      </tr>
                     </tbody>
-                  </Table> 
-                    
-                  
+                  </Table>
                 </li>
               ))}
-             
             </ul>
-            <StudyForm />
+            <ProductForm />
           </Col>
         </Row>
       )}
@@ -250,4 +216,4 @@ const Studies = ({
   )
 }
 
-export default Studies
+export default Products
