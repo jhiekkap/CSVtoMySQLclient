@@ -12,7 +12,7 @@ import {
 } from 'react-bootstrap'
 import { fetchTable } from './../utils/fetchData'
 
-const MeterForm = ({ tables }) => {
+const MeterForm = ({ productID, products, setProducts, tables }) => {
   const [showModal, setShowModal] = useState(false)
   const [title, setTitle] = useState('')
   const [table, setTable] = useState('')
@@ -35,6 +35,24 @@ const MeterForm = ({ tables }) => {
     setPoints(null)
     setMeterTable([])
   }
+
+  const handleSave = () => {
+    const updatedProducts = [...products]
+    const newMeter = {
+      title,
+      table,
+      col,
+      unit,
+      importance,
+      number,
+      points,
+      show: false,
+    } 
+    updatedProducts[productID].meters.push(newMeter)
+    setProducts(updatedProducts)
+    handleCancel()
+    console.log(updatedProducts)
+  }
   const handleShow = () => setShowModal(true)
 
   const handleSetTable = async table => {
@@ -44,69 +62,53 @@ const MeterForm = ({ tables }) => {
   }
 
   const handleSetColumn = col => {
-    setCol(col)
-    console.log('METERTABLE', meterTable)
+    setCol(meterTable[0][col])
+    //console.log('METERTABLE', meterTable)
     const valueSet = [...new Set(meterTable.map(row => row[col]))].filter(
       value => value !== null && value !== undefined
     )
     valueSet.shift()
-    console.log('VALUE SET', valueSet)
-    /* if (typeof valueSet[0] !== 'number') {
-      console.log('TYYPPI', typeof valueSet[0])
-      const pointsObj = {}
-      {
-        valueSet.forEach((value, i) => {
-          pointsObj[value] = i
-        })
-        setPoints(pointsObj)
-      }
-    } */
+    setNumber(typeof valueSet[0] === 'number' ? true : false)
     setPoints(valueSet)
   }
 
-  const handleUp = index => {
+  const handleGoUp = index => {
     console.log('UP', index)
-    if(index > 0){
-      const newPoints = []
-        for(let i = points.length; i--; i > 0){
-          const lower = points[i - 1]
-          const point = points[i]
-          console.log('POINT',point)
-          if(i === index){
-            newPoints.push(lower)
-            newPoints.push(point)
-          } else if (i != index - 1) {
-            newPoints.push(point)
-          }
-          setPoints(newPoints)
-          console.log(newPoints)
-        }
-    }
-    
-  }
-
-  const handleDown = index => {
-    console.log('Down', index)
-    if (index < points.length - 1) {
-      const newPoints = []
+    const newPoints = []
+    if (index > 0) {
       points.forEach((point, i) => {
-        const upper = points[i + 1] 
-        if (i === index) {
-          newPoints.push(upper)
-          newPoints.push(point)
-        } else if (i != index + 1) { 
+        if (i + 1 === index) {
+          newPoints.push(points[i + 1])
+          newPoints.push(points[i])
+        } else if (i != index) {
           newPoints.push(point)
         }
       })
-      //newPoints.reverse()
       setPoints(newPoints)
       console.log(newPoints)
-    } 
+    }
+  }
+
+  const handleGoDown = index => {
+    console.log('Down', index)
+    const newPoints = []
+    if (index < points.length - 1) {
+      points.forEach((point, i) => {
+        if (i === index) {
+          newPoints.push(points[i + 1])
+          newPoints.push(point)
+        } else if (i != index + 1) {
+          newPoints.push(point)
+        }
+      })
+      setPoints(newPoints)
+      console.log(newPoints)
+    }
   }
 
   return (
     <>
-      <Row onClick={handleShow}> + UUSI MITTARI</Row>
+      <Row onClick={handleShow}>UUSI MITTARI</Row>
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -139,7 +141,7 @@ const MeterForm = ({ tables }) => {
               <DropdownButton
                 variant='light'
                 id='dropdown-basic-button'
-                title={'VALITSE VERRATTAVA ARVO'}
+                title={col ? col : 'VALITSE VERRATTAVA ARVO'}
               >
                 {meterTable[0].map((colu, i) => (
                   <Dropdown.Item key={i} onClick={() => handleSetColumn(i)}>
@@ -149,7 +151,7 @@ const MeterForm = ({ tables }) => {
               </DropdownButton>
             )}
 
-            {points && (
+            {!number && points && (
               <Col md={6}>
                 VALITSE ARVOJÄRJESTYS (1 = korkein)
                 <Table>
@@ -158,13 +160,50 @@ const MeterForm = ({ tables }) => {
                       <tr key={i}>
                         <td>{i + 1}</td>
                         <td>{point}</td>
-                        <td onClick={() => handleUp(i)}>+</td>
-                        <td onClick={() => handleDown(i)}>-</td>
+                        <td onClick={() => handleGoUp(i)}>+</td>
+                        <td onClick={() => handleGoDown(i)}>-</td>
                       </tr>
                     ))}
                   </tbody>
                 </Table>
               </Col>
+            )}
+            {number && (
+              <>
+                <Col>
+                  MIN: {Math.min(...points)} MAX: {Math.max(...points)} AVG:{' '}
+                  {(points.reduce((a, b) => a + b) / points.length).toFixed(2)}{' '}
+                  MD: {points[Math.floor(points.length / 2)]}
+                </Col>
+                <DropdownButton
+                  variant='light'
+                  id='dropdown-basic-button'
+                  title={unit ? unit : 'YKSIKKÖ'}
+                >
+                  {['€', '€/m2', '-'].map((uni, i) => (
+                    <Dropdown.Item
+                      key={i}
+                      onClick={() => setUnit(uni != '-' ? uni : '')}
+                    >
+                      {uni}
+                    </Dropdown.Item>
+                  ))}
+                </DropdownButton>
+                <DropdownButton
+                  variant='light'
+                  id='dropdown-basic-button'
+                  title={`TÄRKEYS ${importance * 5} / 5`}
+                >
+                  {[1, 2, 3, 4, 5].map((imp, i) => (
+                    <Dropdown.Item
+                      key={i}
+                      onClick={() => setImportance(imp / 5)}
+                    >
+                      {imp}
+                    </Dropdown.Item>
+                  ))}
+                </DropdownButton>
+              </>
             )}
           </Form>
         </Modal.Body>
@@ -172,7 +211,7 @@ const MeterForm = ({ tables }) => {
           <Button variant='secondary' onClick={handleCancel}>
             Cancel
           </Button>
-          <Button variant='primary' onClick={handleClose}>
+          <Button variant='primary' onClick={handleSave}>
             Save
           </Button>
         </Modal.Footer>

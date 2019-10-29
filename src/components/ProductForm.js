@@ -11,7 +11,7 @@ import {
 } from 'react-bootstrap'
  
  
-function StudyForm() {
+const ProductForm = () => {
     const [show, setShow] = useState(false);
   
     const handleClose = () => setShow(false);
@@ -19,7 +19,7 @@ function StudyForm() {
   
     return (
       <> 
-        <Row onClick={handleShow}> + UUSI HANKE</Row>
+        <span onClick={handleShow}> UUSI HANKE</span>
   
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
@@ -39,4 +39,4 @@ function StudyForm() {
     );
   }
 
-  export default StudyForm 
+  export default ProductForm 

@@ -13,6 +13,7 @@ const studs = [
     title: 'Minne rakennettaisiin pilvenpiirtäjä?',
     story: 'Järvenpäälle uusi sydän',
     districts: ['Keskusta', 'Kyrölä'],
+    show:true,
     meters: [
       {
         title: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',
