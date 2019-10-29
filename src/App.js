@@ -4,11 +4,11 @@ import './App.css'
 import { Button, Container, Row } from 'react-bootstrap'
 import Home from './components/Home'
 import Tables from './components/Tables'
-import Products from './components/Products'
+import Productions from './components/Productions'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 const endpoint = 'http://localhost:3001/'
 
-const studs = [
+/* const studs = [
   {
     title: 'Minne rakennettaisiin pilvenpiirtäjä?',
     story: 'Järvenpäälle uusi sydän',
@@ -47,7 +47,9 @@ const studs = [
       },
     ],
   },
-]
+] */
+
+const JSONendpoint = 'https://api.myjson.com/bins/7vqws'
 
 const App = () => {
   const [tables, setTables] = useState([])
@@ -56,13 +58,17 @@ const App = () => {
   const [currentTable, setCurrentTable] = useState([])
   const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
   const [table, setTable] = useState({})
-  const [products, setProducts] = useState(studs)
+  const [productions, setProductions] = useState([])
   const [uploadedTables, setUploadedTables] = useState([])
   //const [meters, setMeters] = useState(metres)
 
   const fetchTables = async () => {
     console.log('fetching .....')
     try {
+      const jsons = await axios.get(JSONendpoint)
+      setProductions(jsons.data)
+      console.log('JIISONIA',jsons.data)
+
       const body = await axios.get(endpoint + 'all')
       console.log('TABLES', body.data)
       setTables(body.data)
@@ -157,7 +163,7 @@ const App = () => {
           <Route
             path='/projects'
             render={() => (
-              <Products
+              <Productions
                 table={table}
                 tables={tables}
                 fetchTables={fetchTables}
@@ -166,8 +172,8 @@ const App = () => {
                 setCurrentTable={setCurrentTable}
                 /* meters={meters}
                 setMeters={setMeters} */
-                products={products}
-                setProducts={setProducts}
+                productions={productions}
+                setProductions={setProductions}
                 uploadedTables={uploadedTables}
               />
             )}

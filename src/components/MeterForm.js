@@ -11,8 +11,9 @@ import {
   Form,
 } from 'react-bootstrap'
 import { fetchTable } from './../utils/fetchData'
+import axios from 'axios'
 
-const MeterForm = ({ productID, products, setProducts, tables }) => {
+const MeterForm = ({ productionID, productions, setProductions, tables }) => {
   const [showModal, setShowModal] = useState(false)
   const [title, setTitle] = useState('')
   const [table, setTable] = useState('')
@@ -37,7 +38,7 @@ const MeterForm = ({ productID, products, setProducts, tables }) => {
   }
 
   const handleSave = () => {
-    const updatedProducts = [...products]
+    const cloneProductions = [...productions]
     const newMeter = {
       title,
       table,
@@ -48,10 +49,12 @@ const MeterForm = ({ productID, products, setProducts, tables }) => {
       points,
       show: false,
     } 
-    updatedProducts[productID].meters.push(newMeter)
-    setProducts(updatedProducts)
+    cloneProductions[productionID].meters.push(newMeter)
+    setProductions(cloneProductions)
     handleCancel()
-    console.log(updatedProducts)
+    console.log(cloneProductions)
+    axios.put('https://api.myjson.com/bins/7vqws', cloneProductions).then(res => console.log(res))
+  
   }
   const handleShow = () => setShowModal(true)
 
