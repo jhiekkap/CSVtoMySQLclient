@@ -1,0 +1,40 @@
+export const productionTemplates = [
+  {
+    title: 'Minne rakennettaisiin pilvenpiirtäjä?',
+    story: 'Järvenpäälle uusi sydän',
+    districts: ['Keskusta', 'Kyrölä'],
+    show:true,
+    meters: [
+      {
+        title: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',
+        table: 'ToteutuneetAsuntoKaupat',
+        col: 'VelatonNelihinta',
+        unit: '€',
+        importance: 1,
+        number: true,
+        points: [],
+        show: false,
+      },
+      {
+        title: 'Myytyjen asuntojen kunto vuoden sisällä',
+        table: 'ToteutuneetAsuntoKaupat',
+        col: 'Kunto',
+        unit: '',
+        importance: 1,
+        number: false,
+        points: ['huono', 'tyyd.', 'hyvä'], 
+        show: false,
+      },
+      {
+        title: 'Myytyjen asuntojen rakennusvuosi',
+        table: 'ToteutuneetAsuntoKaupat',
+        col: 'Rakennusvuosi',
+        unit: '',
+        importance: 1,
+        number: true,
+        points: [],
+        show: false,
+      },
+    ],
+  },
+] 

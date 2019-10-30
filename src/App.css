@@ -37,3 +37,8 @@ Table {
     }
   }
 }
+
+.productions {
+  display: flex;
+  justify-content: center;
+}

@@ -6,50 +6,9 @@ import Home from './components/Home'
 import Tables from './components/Tables'
 import Productions from './components/Productions'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+//import {productionTemplates} from './utils/prodTemplate'
 const endpoint = 'http://localhost:3001/'
-
-/* const studs = [
-  {
-    title: 'Minne rakennettaisiin pilvenpiirtäjä?',
-    story: 'Järvenpäälle uusi sydän',
-    districts: ['Keskusta', 'Kyrölä'],
-    show:true,
-    meters: [
-      {
-        title: 'Myytyjen asuntojen keskimääräinen neliöhinta vuoden sisällä',
-        table: 'ToteutuneetAsuntoKaupat',
-        col: 'VelatonNelihinta',
-        unit: '€',
-        importance: 1,
-        number: true,
-        points: [],
-        show: false,
-      },
-      {
-        title: 'Myytyjen asuntojen kunto vuoden sisällä',
-        table: 'ToteutuneetAsuntoKaupat',
-        col: 'Kunto',
-        unit: '',
-        importance: 1,
-        number: false,
-        points: ['huono', 'tyyd.', 'hyvä'], 
-        show: false,
-      },
-      {
-        title: 'Myytyjen asuntojen rakennusvuosi',
-        table: 'ToteutuneetAsuntoKaupat',
-        col: 'Rakennusvuosi',
-        unit: '',
-        importance: 1,
-        number: true,
-        points: [],
-        show: false,
-      },
-    ],
-  },
-] */
-
-const JSONendpoint = 'https://api.myjson.com/bins/7vqws'
+ 
 
 const App = () => {
   const [tables, setTables] = useState([])
@@ -64,11 +23,7 @@ const App = () => {
 
   const fetchTables = async () => {
     console.log('fetching .....')
-    try {
-      const jsons = await axios.get(JSONendpoint)
-      setProductions(jsons.data)
-      console.log('JIISONIA',jsons.data)
-
+    try { 
       const body = await axios.get(endpoint + 'all')
       console.log('TABLES', body.data)
       setTables(body.data)

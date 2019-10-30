@@ -8,10 +8,13 @@ import {
   DropdownButton,
   Table,
   Button,
+  Card,
+  ListGroup,
 } from 'react-bootstrap'
 import MeterForm from './MeterForm'
 import ProductionForm from './ProductionForm'
 import EditMeterForm from './EditMeterForm'
+const JSONendpoint = 'https://api.myjson.com/bins/7vqws'
 const Productions = ({
   table,
   tables,
@@ -24,19 +27,27 @@ const Productions = ({
   uploadedTables,
 }) => {
   useEffect(() => {
-    const tablesOfProductions = [
-      ...new Set(
-        [].concat(
-          productions.map(production => [
-            ...new Set(production.meters.map(meter => meter.table)),
-          ])
-        )
-      ),
-    ]
-    console.log('TABLETIT', tablesOfProductions)
-    tablesOfProductions.forEach(table => {
-      if (table[0]) fetchTable(table[0])
-    })
+    const fetchJSON = async () => {
+      const body = await axios.get(JSONendpoint)
+      const jsonProductions = body.data
+      setProductions(jsonProductions)
+      console.log('JIISONIA', jsonProductions)
+      const tablesOfProductions = [
+        ...new Set(
+          [].concat(
+            jsonProductions.map(production => [
+              ...new Set(production.meters.map(meter => meter.table)),
+            ])
+          )
+        ),
+      ]
+        .map(table => table[0])
+        .filter(table => table)
+
+      console.log('TABLETIT1', tablesOfProductions)
+      tablesOfProductions.forEach(table => fetchTable(table))
+    }
+    fetchJSON()
   }, [])
 
   const myAverageValue = (district, meter) => {
@@ -105,7 +116,7 @@ const Productions = ({
     setProductions(cloneProductions)
   }
 
-  const handleShowProductionion = productionID => {
+  const handleShowProduction = productionID => {
     const cloneProductions = [...productions]
     cloneProductions[productionID].show = !cloneProductions[productionID].show
     setProductions(cloneProductions)
@@ -124,102 +135,97 @@ const Productions = ({
 
   return (
     <Container>
-      {uploadedTables.length > 0 && (
-        <Row>
-          <Col>
-            <h4>HANKKEET</h4>
-            <ul>
-              {productions.map((production, p) => (
-                <li key={p}>
-                  <div onClick={() => handleShowProductionion(p)}>
-                    {production.title}
-                    <br /> - {production.story}
-                  </div>
-                  {production.show && (
-                    <div>
-                      VERTAILUSSA:{' '}
-                      {production.districts.map(
-                        dist =>
-                          dist +
-                          ': ' +
-                          allPoints(production, dist).toFixed(2) +
-                          '  '
+      <Row>
+        <Col>
+          <ProductionForm
+            productions={productions}
+            setProductions={setProductions}
+          />
+        </Col>
+      </Row>
+      <Row>
+        {productions.map((production, p) => (
+          <Card key={p} style={{ width: '36rem', marginTop: '1rem' }}>
+            {/*  <Card.Img variant='top' src='holder.js/100px180' /> */}
+            <Card.Body>
+              <div>
+                <Card.Title className='productions'>
+                  {production.title}
+                </Card.Title>
+                <Card.Text className='productions'>
+                  {production.story}
+                  <br />
+                  VERTAILUSSA: <br />
+                </Card.Text>
+              </div>
+              <span className='productions'>
+                {production.districts.map(
+                  dist =>
+                    dist + ': ' + allPoints(production, dist).toFixed(2) + '  '
+                )}
+              </span>
+              <br />
+              <h6 className='productions'>MITTARIT:</h6>
+              {production.meters &&
+                production.meters.map((meter, m) => (
+                  <ListGroup className='productions' key={m} variant='flush'>
+                    <ListGroup.Item className='productions'>
+                      <span onClick={() => handleShowMeter(p, m)}>
+                        {meter.title}{' '}
+                      </span>
+                      {meter.show && (
+                        <Col md={6}>
+                          <span>
+                            <EditMeterForm />
+                          </span>
+                          <span onClick={() => handleDeleteMeter(p, m)}>
+                            DELETE
+                          </span>
+                          <Table striped bordered hover>
+                            <thead>
+                              <tr>
+                                <td>ALUE</td>
+                                <td>ALUEEN KA / JÄRVENPÄÄN KA</td>
+                                <td>PISTEET</td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {production.districts.map((dist, d) => (
+                                <tr key={d}>
+                                  <td>{dist}</td>
+                                  <td>
+                                    {myAverageValue(dist, meter).myAVG.toFixed(
+                                      2
+                                    )}
+                                    {meter.number && meter.unit} /{' '}
+                                    {meterPoints(dist, meter).allAVG.toFixed(2)}
+                                    {meter.number && meter.unit}
+                                  </td>
+                                  <td>
+                                    {meterPoints(dist, meter).points.toFixed(2)}{' '}
+                                    / 1
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </Col>
                       )}
-                      <br />
-                      <h6>MITTARIT:</h6>
-                      {production.meters &&
-                        production.meters.map((meter, m) => (
-                          <ul key={m}>
-                            <li>
-                              <span onClick={() => handleShowMeter(p, m)}>
-                                {meter.title}{' '}
-                              </span>
-                              {meter.show && (
-                                <Col md={6}>
-                                  <span>
-                                    <EditMeterForm />
-                                  </span>
-                                  <span onClick={() => handleDeleteMeter(p, m)}>
-                                    DELETE
-                                  </span>
-                                  <Table striped bordered hover>
-                                    <thead>
-                                      <tr>
-                                        <td>ALUE</td>
-                                        <td>ALUEEN KA / JÄRVENPÄÄN KA</td>
-                                        <td>PISTEET</td>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {production.districts.map((dist, d) => (
-                                        <tr key={d}>
-                                          <td>{dist}</td>
-                                          <td>
-                                            {myAverageValue(
-                                              dist,
-                                              meter
-                                            ).myAVG.toFixed(2)}
-                                            {meter.number && meter.unit} /{' '}
-                                            {meterPoints(
-                                              dist,
-                                              meter
-                                            ).allAVG.toFixed(2)}
-                                            {meter.number && meter.unit}
-                                          </td>
-                                          <td>
-                                            {meterPoints(
-                                              dist,
-                                              meter
-                                            ).points.toFixed(2)}{' '}
-                                            / 1
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </Table>
-                                </Col>
-                              )}
-                            </li>
-                          </ul>
-                        ))}
-                      <MeterForm
-                        productionID={p}
-                        productions={productions}
-                        setProductions={setProductions}
-                        tables={tables}
-                      />
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <ProductionForm
-              productions={productions}
-              setProductions={setProductions}
-            />
-          </Col>
-        </Row>
-      )}
+                    </ListGroup.Item>
+                  </ListGroup>
+                ))}
+              {/* <Button variant='primary'>Go somewhere</Button> */}
+              <MeterForm
+                className='productions'
+                productionID={p}
+                productions={productions}
+                setProductions={setProductions}
+                tables={tables}
+              />
+            </Card.Body>
+          </Card>
+        ))}
+      </Row>
     </Container>
   )
 }

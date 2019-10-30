@@ -111,11 +111,11 @@ const MeterForm = ({ productionID, productions, setProductions, tables }) => {
 
   return (
     <>
-      <Row onClick={handleShow}>UUSI MITTARI</Row>
+      <Row className='productions' onClick={handleShow}>UUSI MITTARI</Row>
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>UUSI MITTARI</Modal.Title>
+          <Modal.Title >UUSI MITTARI</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
