@@ -20,25 +20,19 @@ Table {
   margin:5px
 }
 
-@mixin react-md-file-inputs {
-  .md-file-input {
-    height: 0;
-    opacity: 0;
-    overflow: hidden;
-    position: absolute;
-    width: 0;
-  }
-
-  .md-file-input-container {
-    position: relative;
-
-    .md-btn {
-      display: block;
-    }
-  }
+.card  {
+  border-radius: 15px;
+  box-shadow: 1px 1px #888888;
 }
+ 
 
-.productions {
+.center{ 
   display: flex;
   justify-content: center;
 }
+
+body {
+  background-color: #a1f0f0;
+}
+
+ 

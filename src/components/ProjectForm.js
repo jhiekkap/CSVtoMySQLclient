@@ -12,7 +12,7 @@ import {
 } from 'react-bootstrap'
 import axios from 'axios'
 
-const ProductionForm = ({ productions, setProductions }) => {
+const ProjectForm = ({ projects, setProjects }) => {
   const [showModal, setShowModal] = useState(false)
 
   const [title, setTitle] = useState('')
@@ -35,19 +35,19 @@ const ProductionForm = ({ productions, setProductions }) => {
   const allDistricts = ['Kyrölä', 'Jamppa', 'Keskusta', 'Loutti']
 
   const handleSave = () => {
-    const cloneProductions = [...productions]
-    const newProduction = {
+    const cloneProjects = [...projects]
+    const newProject = {
       title,
       story,
       districts,
       show,
       meters,
     }
-    cloneProductions.push(newProduction)
-    setProductions(cloneProductions)
+    cloneProjects.push(newProject)
+    setProjects(cloneProjects)
     handleCancel()
-    console.log(cloneProductions)
-    axios.put('https://api.myjson.com/bins/7vqws', cloneProductions).then(res => console.log(res))
+    console.log(cloneProjects)
+    axios.put('https://api.myjson.com/bins/7vqws', cloneProjects).then(res => console.log(res))
   }
   const handleShow = () => setShowModal(true)
 
@@ -120,4 +120,4 @@ const ProductionForm = ({ productions, setProductions }) => {
   )
 }
 
-export default ProductionForm
+export default ProjectForm

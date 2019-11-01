@@ -1,4 +1,4 @@
-export const productionTemplates = [
+export const projectTemplates = [
   {
     title: 'Minne rakennettaisiin pilvenpiirtäjä?',
     story: 'Järvenpäälle uusi sydän',

@@ -7,14 +7,17 @@ const FileForm = ({
   tables,
   fetchTable,
   currentTable,
+  setCurrentTable,
+  setCloneTables,
   setShowTable,
   showTable,
   tableName,
   setTableName,
+  setToggleColumnsOrder,
 }) => {
-  return ( 
+  return (
     <Row>
-      <DropdownButton
+      {tables && <DropdownButton
         variant='light'
         id='dropdown-basic-button'
         title={!showTable ? 'VALITSE TAULU' : showTable}
@@ -25,13 +28,17 @@ const FileForm = ({
             onClick={() => {
               setShowTable(table)
               setTableName(table)
-              fetchTable(table)
+              fetchTable(table).then(wholeTable => {
+                setCurrentTable(wholeTable)
+                setCloneTables([wholeTable])
+                setToggleColumnsOrder(wholeTable[0].map(col => true))
+              })
             }}
           >
             {table}
           </Dropdown.Item>
         ))}
-      </DropdownButton>
+      </DropdownButton>}
       <Form inline={true}>
         <Form.Control
           className='fileinput'

@@ -1,56 +1,49 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import {
-  Container,
-  Row,
-  Col,
-  Dropdown,
-  DropdownButton,
-  Table,
-  Button,
-  Card,
-  ListGroup,
-} from 'react-bootstrap'
+import { Container, Row, Col, Table, Card, ListGroup } from 'react-bootstrap'
 import MeterForm from './MeterForm'
-import ProductionForm from './ProductionForm'
-import EditMeterForm from './EditMeterForm'
+import ProjectForm from './ProjectForm'
+import { projectTemplates } from '../utils/projectTemplate'
+import { fetchTable, fetchAllTableNames } from '../utils/fetchData'
 const JSONendpoint = 'https://api.myjson.com/bins/7vqws'
-const Productions = ({
-  table,
-  tables,
-  fetchTables,
-  fetchTable,
-  /* meters,
-  setMeters, */
-  productions,
-  setProductions,
-  uploadedTables,
-}) => {
+
+const Projects = () => {
+  const [tables, setTables] = useState([])
+  const [projects, setProjects] = useState(projectTemplates)
+  const [uploadedTables, setUploadedTables] = useState([])
+
   useEffect(() => {
     const fetchJSON = async () => {
       const body = await axios.get(JSONendpoint)
-      const jsonProductions = body.data
-      setProductions(jsonProductions)
-      console.log('JIISONIA', jsonProductions)
-      const tablesOfProductions = [
+      const jsonProjects = body.data
+      setProjects(jsonProjects)
+      console.log('PROJEKTIT JIISONISSA', jsonProjects)
+      const tablesOfProjects = [
         ...new Set(
           [].concat(
-            jsonProductions.map(production => [
-              ...new Set(production.meters.map(meter => meter.table)),
+            jsonProjects.map(project => [
+              ...new Set(project.meters.map(meter => meter.table)),
             ])
           )
         ),
       ]
         .map(table => table[0])
         .filter(table => table)
+      console.log('TABLETIT1', tablesOfProjects)
 
-      console.log('TABLETIT1', tablesOfProductions)
-      tablesOfProductions.forEach(table => fetchTable(table))
+      tablesOfProjects.forEach(table => {
+        fetchTable(table).then(wholeTable => {
+          setUploadedTables(
+            uploadedTables.concat({ name: table, content: wholeTable })
+          )
+        })
+      })
     }
+    fetchAllTableNames().then(allNames => setTables(allNames))
     fetchJSON()
   }, [])
 
-  const myAverageValue = (district, meter) => {
+  const districtsAverageValue = (district, meter) => {
     const table = uploadedTables.find(table => table.name === meter.table)
       .content
     const valueCol = table[0].indexOf(meter.col)
@@ -69,17 +62,17 @@ const Productions = ({
     const mySum = myValues
       .map(value => (meter.number ? value : meter.points.indexOf(value)))
       .reduce((a, b) => a + b)
-    const myAVG = mySum / myValues.length
+    const distAVG = mySum / myValues.length
     const max = Math.max(
       ...myValues.map(value =>
         meter.number ? value : meter.points.indexOf(value)
       )
     )
-    return { myAVG, valueCol, allDistrictsGrouped, max }
+    return { distAVG, valueCol, allDistrictsGrouped, max }
   }
 
-  const meterPoints = (district, meter) => {
-    const { myAVG, valueCol, allDistrictsGrouped } = myAverageValue(
+  const pointsOfMeter = (district, meter) => {
+    const { distAVG, valueCol, allDistrictsGrouped } = districtsAverageValue(
       district,
       meter
     )
@@ -92,15 +85,15 @@ const Productions = ({
           .reduce((a, b) => a + b) / dist.length
     )
     const allAVG = allAVGs.reduce((a, b) => a + b) / allAVGs.length
-    const points = (myAVG / allAVG) * meter.importance
+    const points = (distAVG / allAVG) * meter.importance
 
     return { allAVG, points }
   }
 
-  const allPoints = (production, district) => {
-    if (production.meters > 0) {
-      const pointsList = production.meters.map(
-        meter => meterPoints(district, meter).points
+  const pointsOfDistrict = (project, district) => {
+    if (project.meters > 0) {
+      const pointsList = project.meters.map(
+        meter => pointsOfMeter(district, meter).points
       )
       return pointsList.reduce((a, b) => a + b)
     } else {
@@ -108,75 +101,82 @@ const Productions = ({
     }
   }
 
-  const handleShowMeter = (productionID, meterID) => {
-    const cloneProductions = [...productions]
-    cloneProductions[productionID].meters[meterID].show = !cloneProductions[
-      productionID
+  const handleShowMeter = (projectID, meterID) => {
+    const cloneProjects = [...projects]
+    cloneProjects[projectID].meters[meterID].show = !cloneProjects[
+      projectID
     ].meters[meterID].show
-    setProductions(cloneProductions)
+    setProjects(cloneProjects)
   }
 
-  const handleShowProduction = productionID => {
-    const cloneProductions = [...productions]
-    cloneProductions[productionID].show = !cloneProductions[productionID].show
-    setProductions(cloneProductions)
+  const handleShowProject = projectID => {
+    const cloneProjects = [...projects]
+    cloneProjects[projectID].show = !cloneProjects[projectID].show
+    setProjects(cloneProjects)
   }
 
-  const handleDeleteMeter = (productionID, meterID) => {
-    const cloneProductions = [...productions]
-    cloneProductions[productionID].meters = cloneProductions[
-      productionID
+  const handleDeleteMeter = (projectID, meterID) => {
+    const cloneProjects = [...projects]
+    cloneProjects[projectID].meters = cloneProjects[
+      projectID
     ].meters.filter((meter, i) => i !== meterID)
-    setProductions(cloneProductions)
+    setProjects(cloneProjects)
     axios
-      .put('https://api.myjson.com/bins/7vqws', cloneProductions)
+      .put('https://api.myjson.com/bins/7vqws', cloneProjects)
       .then(res => console.log(res))
   }
 
   return (
     <Container>
-      <Row>
+      <Row className='center'>
         <Col>
-          <ProductionForm
-            productions={productions}
-            setProductions={setProductions}
+          <ProjectForm
+            projects={projects}
+            setProjects={setProjects}
           />
         </Col>
       </Row>
       <Row>
-        {productions.map((production, p) => (
+        {uploadedTables && projects.map((project, p) => (
           <Card key={p} style={{ width: '36rem', marginTop: '1rem' }}>
             {/*  <Card.Img variant='top' src='holder.js/100px180' /> */}
             <Card.Body>
               <div>
-                <Card.Title className='productions'>
-                  {production.title}
-                </Card.Title>
-                <Card.Text className='productions'>
-                  {production.story}
+                <Card.Title className='center'>{project.title}</Card.Title>
+                <Card.Text className='center'>
+                  {project.story}
                   <br />
                   VERTAILUSSA: <br />
                 </Card.Text>
               </div>
-              <span className='productions'>
-                {production.districts.map(
+              <span className='center'>
+                {project.districts.map(
                   dist =>
-                    dist + ': ' + allPoints(production, dist).toFixed(2) + '  '
+                    dist + ': ' + pointsOfDistrict(project, dist).toFixed(2) + '  '
                 )}
               </span>
               <br />
-              <h6 className='productions'>MITTARIT:</h6>
-              {production.meters &&
-                production.meters.map((meter, m) => (
-                  <ListGroup className='productions' key={m} variant='flush'>
-                    <ListGroup.Item className='productions'>
+              <h6 className='center'>MITTARIT:</h6>
+              {project.meters &&
+                project.meters.map((meter, m) => (
+                  <ListGroup className='center' key={m} variant='flush'>
+                    <ListGroup.Item>
                       <span onClick={() => handleShowMeter(p, m)}>
                         {meter.title}{' '}
                       </span>
                       {meter.show && (
-                        <Col md={6}>
+                        <Col>
                           <span>
-                            <EditMeterForm />
+                            <MeterForm
+                              className='center'
+                              edit={true}
+                              projectID={p}
+                              meterID={m}
+                              meter={meter}
+                              projects={projects}
+                              setProjects={setProjects}
+                              tables={tables}
+                            />
                           </span>
                           <span onClick={() => handleDeleteMeter(p, m)}>
                             DELETE
@@ -190,19 +190,19 @@ const Productions = ({
                               </tr>
                             </thead>
                             <tbody>
-                              {production.districts.map((dist, d) => (
+                              {project.districts.map((dist, d) => (
                                 <tr key={d}>
                                   <td>{dist}</td>
                                   <td>
-                                    {myAverageValue(dist, meter).myAVG.toFixed(
+                                    {districtsAverageValue(dist, meter).distAVG.toFixed(
                                       2
                                     )}
                                     {meter.number && meter.unit} /{' '}
-                                    {meterPoints(dist, meter).allAVG.toFixed(2)}
+                                    {pointsOfMeter(dist, meter).allAVG.toFixed(2)}
                                     {meter.number && meter.unit}
                                   </td>
                                   <td>
-                                    {meterPoints(dist, meter).points.toFixed(2)}{' '}
+                                    {pointsOfMeter(dist, meter).points.toFixed(2)}{' '}
                                     / 1
                                   </td>
                                 </tr>
@@ -216,10 +216,11 @@ const Productions = ({
                 ))}
               {/* <Button variant='primary'>Go somewhere</Button> */}
               <MeterForm
-                className='productions'
-                productionID={p}
-                productions={productions}
-                setProductions={setProductions}
+                edit={false}
+                className='center'
+                projectID={p}
+                projects={projects}
+                setProjects={setProjects}
                 tables={tables}
               />
             </Card.Body>
@@ -230,4 +231,4 @@ const Productions = ({
   )
 }
 
-export default Productions
+export default Projects

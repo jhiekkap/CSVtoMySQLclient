@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Container,
   Row,
   Col,
   Dropdown,
-  DropdownButton,
+  DropdownButton, 
   Table,
   Button,
   Modal,
@@ -13,7 +13,15 @@ import {
 import { fetchTable } from './../utils/fetchData'
 import axios from 'axios'
 
-const MeterForm = ({ productionID, productions, setProductions, tables }) => {
+const MeterForm = ({
+  productionID,
+  meterID,
+  meter,
+  productions,
+  setProductions,
+  tables,
+  edit,
+}) => {
   const [showModal, setShowModal] = useState(false)
   const [title, setTitle] = useState('')
   const [table, setTable] = useState('')
@@ -23,6 +31,18 @@ const MeterForm = ({ productionID, productions, setProductions, tables }) => {
   const [number, setNumber] = useState(false)
   const [points, setPoints] = useState(null)
   const [meterTable, setMeterTable] = useState([])
+
+  useEffect(() => {
+    if(edit){
+      setTitle(meter.title)
+      setTable(meter.table)
+      setCol(meter.col)
+      setUnit(meter.unit)
+      setImportance(meter.importance)
+      setNumber(meter.number)
+      setPoints(meter.points)
+    }
+  }, [])
 
   const handleClose = () => setShowModal(false)
   const handleCancel = () => {
@@ -48,13 +68,14 @@ const MeterForm = ({ productionID, productions, setProductions, tables }) => {
       number,
       points,
       show: false,
-    } 
+    }
     cloneProductions[productionID].meters.push(newMeter)
     setProductions(cloneProductions)
     handleCancel()
     console.log(cloneProductions)
-    axios.put('https://api.myjson.com/bins/7vqws', cloneProductions).then(res => console.log(res))
-  
+    axios
+      .put('https://api.myjson.com/bins/7vqws', cloneProductions)
+      .then(res => console.log(res))
   }
   const handleShow = () => setShowModal(true)
 
@@ -111,11 +132,13 @@ const MeterForm = ({ productionID, productions, setProductions, tables }) => {
 
   return (
     <>
-      <Row className='productions' onClick={handleShow}>UUSI MITTARI</Row>
+      {!edit ? <span className='center' onClick={handleShow}>
+        UUSI MITTARI
+      </span> : <span onClick={handleShow}>MUOKKAA MITTARIA</span>}
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title >UUSI MITTARI</Modal.Title>
+          <Modal.Title>{edit ? 'MUOKKAA MITTARIA' : 'UUSI MITTARI'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -171,7 +194,7 @@ const MeterForm = ({ productionID, productions, setProductions, tables }) => {
                 </Table>
               </Col>
             )}
-            {number && (
+            {number &&  points && (
               <>
                 <Col>
                   MIN: {Math.min(...points)} MAX: {Math.max(...points)} AVG:{' '}
@@ -214,9 +237,13 @@ const MeterForm = ({ productionID, productions, setProductions, tables }) => {
           <Button variant='secondary' onClick={handleCancel}>
             Cancel
           </Button>
-          <Button variant='primary' onClick={handleSave}>
-            Save
-          </Button>
+          {!edit ? (
+            <Button variant='primary' onClick={handleSave}>
+              Save
+            </Button>
+          ) : (
+            <Button>hello</Button>
+          )}
         </Modal.Footer>
       </Modal>
     </>

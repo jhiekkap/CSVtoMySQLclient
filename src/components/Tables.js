@@ -1,30 +1,31 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import readXlsxFile from 'read-excel-file'
 import { Container, Row } from 'react-bootstrap'
 import axios from 'axios'
 import ShowTable from './ShowTable'
 import FileForm from './FileForm'
 import EditForm from './EditForm'
-import {cleanName, cleanFile } from './../utils/helpers'
+import { cleanName, cleanFile } from './../utils/helpers'
+import { fetchTable, fetchAllTableNames } from './../utils/fetchData'
 const endpoint = 'http://localhost:3001/'
 
-const Tables = ({ 
-  tables,
-  fetchTables,
-  fetchTable, 
-  currentTable,
-  setCurrentTable,
-  cloneTables,
-  setCloneTables,
-  toggleColumnsOrder,
-  setToggleColumnsOrder,
-}) => {
-
+const Tables = () => {
+  const [tables, setTables] = useState([])
   const [tableName, setTableName] = useState('')
+  const [currentTable, setCurrentTable] = useState([])
+  const [cloneTables, setCloneTables] = useState([])
+  const [toggleColumnsOrder, setToggleColumnsOrder] = useState([])
   const [edit, setEdit] = useState(false)
-  const [findCell, setFindCell] = useState('') 
+  const [findCell, setFindCell] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
   const [showTable, setShowTable] = useState('')
+
+  useEffect(() => {
+    fetchAllTableNames().then(allTables => {
+      console.log('AAAALLLLL TABLEES', allTables)
+      setTables(allTables)
+    })
+  }, [])
 
   const upDateCurrentTable = newCurrentTable => {
     setCurrentTable(newCurrentTable)
@@ -47,7 +48,8 @@ const Tables = ({
     const file = document.getElementById('uploadedFile').files[0]
     const type = file.type
     const name = cleanName(file.name.split('.')[0])
-    if (type === 'text/csv') {      /////JOS CSV
+    if (type === 'text/csv') {
+      /////JOS CSV
       console.log(type, name, file)
       setTableName(name)
       const reader = new FileReader()
@@ -55,15 +57,16 @@ const Tables = ({
       reader.onload = e => {
         let text = e.target.result
         const cleanerCSV = cleanFile(text)
-        createNewCurrentTable(cleanerCSV) 
+        createNewCurrentTable(cleanerCSV)
       }
 
       reader.readAsText(file)
-    } else {                      ////////JOS JOKU MUU (EXCEL...)
+    } else {
+      ////////JOS JOKU MUU (EXCEL...)
       console.log('LOADING EXCEL...')
       readXlsxFile(file).then(rows => {
         console.log(rows)
-        createNewCurrentTable(rows) 
+        createNewCurrentTable(rows)
       })
     }
   }
@@ -71,8 +74,8 @@ const Tables = ({
   const createNewCurrentTable = table => {
     setCurrentTable(table)
     setCloneTables([table])
-    const columns = table[0] 
-    columns && setToggleColumnsOrder(columns.map(col => true))  
+    const columns = table[0]
+    columns && setToggleColumnsOrder(columns.map(col => true))
   }
 
   const handleSaveFile = async () => {
@@ -90,23 +93,21 @@ const Tables = ({
         const table = currentTable.slice(1)
         console.log('TABLE CONTENTS', table)
         try {
-          const createResponse = await axios.post(endpoint + 'create', { ///LUO TAULU
+          const createResponse = await axios.post(endpoint + 'create', {
+            ///LUO TAULU
             tableName,
             columns,
             table,
           })
           console.log(createResponse)
-          /* table.forEach(async row => {   //////EI TOIMI REMOTEMYSQLlässä
-            const insertResponse = await axios.post(endpoint + 'insert', {
-              tableName,
-              columns, 
-              row
-            })
-            console.log(insertResponse)
-          })  */ 
+
           setTimeout(() => {
-            fetchTables()
-            fetchTable(tableName)
+            fetchAllTableNames().then(allTables => setTables(allTables))
+            fetchTable(tableName).then(wholeTable => {
+              setCurrentTable(wholeTable)
+              setCloneTables([wholeTable])
+              setToggleColumnsOrder(columns.map(col => true))
+            })
           }, 2000)
         } catch (error) {
           console.log(error)
@@ -125,10 +126,13 @@ const Tables = ({
         tables={tables}
         fetchTable={fetchTable}
         currentTable={currentTable}
+        setCurrentTable={setCurrentTable}
+        setCloneTables={setCloneTables}
         setShowTable={setShowTable}
         showTable={showTable}
         tableName={tableName}
         setTableName={setTableName}
+        setToggleColumnsOrder={setToggleColumnsOrder}
       />
       {currentTable.length > 0 && (
         <EditForm
