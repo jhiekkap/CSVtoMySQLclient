@@ -19,12 +19,13 @@ const Tables = () => {
   const [findCell, setFindCell] = useState('')
   const [undoIndex, setUndoIndex] = useState(0)
   const [showTable, setShowTable] = useState('')
+  const [upload, setUpload] = useState(false)
 
   useEffect(() => {
     fetchAllTableNames().then(allTables => {
       console.log('AAAALLLLL TABLEES', allTables)
       setTables(allTables)
-    })
+    }) 
   }, [])
 
   const upDateCurrentTable = newCurrentTable => {
@@ -48,10 +49,11 @@ const Tables = () => {
     const file = document.getElementById('uploadedFile').files[0]
     const type = file.type
     const name = cleanName(file.name.split('.')[0])
+    setTableName(name)
+    setUpload(false)
     if (type === 'text/csv') {
       /////JOS CSV
-      console.log(type, name, file)
-      setTableName(name)
+      console.log(type, name, file) 
       const reader = new FileReader()
 
       reader.onload = e => {
@@ -133,6 +135,8 @@ const Tables = () => {
         tableName={tableName}
         setTableName={setTableName}
         setToggleColumnsOrder={setToggleColumnsOrder}
+        upload={upload}
+        setUpload={setUpload}
       />
       {currentTable.length > 0 && (
         <EditForm

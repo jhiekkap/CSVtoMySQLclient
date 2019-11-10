@@ -4,7 +4,7 @@ import {
   Row,
   Col,
   Dropdown,
-  DropdownButton, 
+  DropdownButton,
   Table,
   Button,
   Modal,
@@ -14,11 +14,11 @@ import { fetchTable } from './../utils/fetchData'
 import axios from 'axios'
 
 const MeterForm = ({
-  productionID,
+  projectID,
   meterID,
   meter,
-  productions,
-  setProductions,
+  projects,
+  setProjects,
   tables,
   edit,
 }) => {
@@ -33,7 +33,7 @@ const MeterForm = ({
   const [meterTable, setMeterTable] = useState([])
 
   useEffect(() => {
-    if(edit){
+    if (edit) {
       setTitle(meter.title)
       setTable(meter.table)
       setCol(meter.col)
@@ -58,7 +58,7 @@ const MeterForm = ({
   }
 
   const handleSave = () => {
-    const cloneProductions = [...productions]
+    const cloneProjects = [...projects]
     const newMeter = {
       title,
       table,
@@ -69,13 +69,20 @@ const MeterForm = ({
       points,
       show: false,
     }
-    cloneProductions[productionID].meters.push(newMeter)
-    setProductions(cloneProductions)
+
+    if (edit) {
+      cloneProjects[projectID].meters = cloneProjects[projectID].meters.map(
+        (meter, i) => (meterID = i ? newMeter : meter)
+      )
+    } else {
+      cloneProjects[projectID].meters.push(newMeter)
+    }
+    setProjects(cloneProjects)
     handleCancel()
-    console.log(cloneProductions)
+    console.log('SAVING / UPDATING PROJECTS:', cloneProjects)
     axios
-      .put('https://api.myjson.com/bins/7vqws', cloneProductions)
-      .then(res => console.log(res))
+      .put('http://localhost:3001/projects', cloneProjects)
+      .then(res => console.log(res)) 
   }
   const handleShow = () => setShowModal(true)
 
@@ -83,6 +90,12 @@ const MeterForm = ({
     setTable(table)
     const chosenTable = await fetchTable(table)
     setMeterTable(chosenTable)
+    if (edit) {
+      setCol('')
+      setPoints('')
+      setNumber('')
+      setUnit('')
+    }
   }
 
   const handleSetColumn = col => {
@@ -132,13 +145,19 @@ const MeterForm = ({
 
   return (
     <>
-      {!edit ? <span className='center' onClick={handleShow}>
-        UUSI MITTARI
-      </span> : <span onClick={handleShow}>MUOKKAA MITTARIA</span>}
+      {!edit ? (
+        <span className='center' onClick={handleShow}>
+          UUSI MITTARI
+        </span>
+      ) : (
+        <span onClick={handleShow}>MUOKKAA </span>
+      )}
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>{edit ? 'MUOKKAA MITTARIA' : 'UUSI MITTARI'}</Modal.Title>
+          <Modal.Title>
+            {edit ? 'MUOKKAA MITTARIA' : 'UUSI MITTARI'}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form>
@@ -194,7 +213,7 @@ const MeterForm = ({
                 </Table>
               </Col>
             )}
-            {number &&  points && (
+            {number && points && (
               <>
                 <Col>
                   MIN: {Math.min(...points)} MAX: {Math.max(...points)} AVG:{' '}
@@ -242,7 +261,9 @@ const MeterForm = ({
               Save
             </Button>
           ) : (
-            <Button>hello</Button>
+            <Button variant='primary' onClick={handleSave}>
+              Update
+            </Button>
           )}
         </Modal.Footer>
       </Modal>

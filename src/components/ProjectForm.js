@@ -47,7 +47,7 @@ const ProjectForm = ({ projects, setProjects }) => {
     setProjects(cloneProjects)
     handleCancel()
     console.log(cloneProjects)
-    axios.put('https://api.myjson.com/bins/7vqws', cloneProjects).then(res => console.log(res))
+    axios.put('http://localhost:3001/projects', cloneProjects).then(res => console.log(res))
   }
   const handleShow = () => setShowModal(true)
 
@@ -61,7 +61,7 @@ const ProjectForm = ({ projects, setProjects }) => {
 
   return (
     <>
-      <Row onClick={handleShow}>LUO UUSI HANKE</Row>
+      <Button variant='light' onClick={handleShow}>LUO UUSI HANKE</Button>
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -99,8 +99,8 @@ const ProjectForm = ({ projects, setProjects }) => {
                 </Dropdown.Item>
               ))}
             </DropdownButton>
-            {districts.map(dist => (
-              <p>
+            {districts.map((dist, d) => (
+              <p key={d}>
                 {dist}&nbsp;
                 <span onClick={() => handleDeleteDistrict(dist)}>X</span>
               </p>
