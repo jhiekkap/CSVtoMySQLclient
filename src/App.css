@@ -19,3 +19,20 @@ input {
 Table {
   margin:5px
 }
+
+.card  {
+  border-radius: 15px;
+  box-shadow: 1px 1px #888888;
+}
+ 
+
+.center{ 
+  display: flex;
+  justify-content: center;
+}
+
+body {
+  background-color: #a1f0f0;
+}
+
+ 
