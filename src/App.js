@@ -82,6 +82,7 @@ const App = () => {
                 tables={tables}
                 fetchTables={fetchTables}
                 fetchTable={fetchTable}
+                currentTable={currentTable}
               />
             )}
           />
