@@ -10,7 +10,7 @@ import {
   Modal,
   Form,
 } from 'react-bootstrap'
-import { fetchTable } from './../utils/fetchData'
+import { fetchTable } from '../../utils/fetchData'
 import axios from 'axios'
 
 const MeterForm = ({

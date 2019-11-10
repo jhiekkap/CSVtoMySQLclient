@@ -10,7 +10,7 @@ export const fetchAllTableNames = async () => {
   } catch (error) {
     console.error(error)
   }
-}
+} 
 
 export const fetchTable = async table => {
   console.log('fetching .....')

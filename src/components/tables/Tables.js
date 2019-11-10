@@ -3,10 +3,10 @@ import readXlsxFile from 'read-excel-file'
 import { Container, Row } from 'react-bootstrap'
 import axios from 'axios'
 import ShowTable from './ShowTable'
-import FileForm from './FileForm'
+import FileForm from './FileForm' 
 import EditForm from './EditForm'
-import { cleanName, cleanFile } from './../utils/helpers'
-import { fetchTable, fetchAllTableNames } from './../utils/fetchData'
+import { cleanName, cleanFile } from '../../utils/helpers'
+import { fetchTable, fetchAllTableNames } from '../../utils/fetchData'
 const endpoint = 'http://localhost:3001/'
 
 const Tables = () => {

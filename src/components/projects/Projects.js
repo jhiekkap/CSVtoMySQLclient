@@ -11,7 +11,7 @@ import {
 import MeterForm from './MeterForm'
 import ProjectForm from './ProjectForm'
 //import { projectTemplates } from '../utils/projectTemplate'
-import { fetchTable, fetchAllTableNames } from '../utils/fetchData'
+import { fetchTable, fetchAllTableNames } from '../../utils/fetchData'
 //const JSONendpoint = 'https://api.myjson.com/bins/7vqws'
 
 const Projects = () => {

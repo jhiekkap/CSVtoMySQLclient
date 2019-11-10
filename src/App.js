@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import './App.css'
 import { Button, Container, Row } from 'react-bootstrap'
-import Home from './components/Home'
-import Tables from './components/Tables'
-import Projects from './components/Projects'
+import Home from './components/home/Home'
+import Tables from './components/tables/Tables'
+import Projects from './components/projects/Projects'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
 const App = () => {
