@@ -40,19 +40,17 @@ const Home = () => {
     Jamppa: true,
     Isokytö: true,
     Nummenkylä: true,
-    Hinta: true,
-    Hinta2: true,
+    Kyrölä: true,
+    Peltola: true,
+    Kinnari: true  /////////TÄSTÄ PUUTTUU VIELÄ MUUTAMA KAUPUNGINOSA, LISÄSIN PARI
+
   })
 
   const [tables, setTables] = useState([])
   const [table, setTable] = useState([])
-  const [hinta1, setHinta1] = useState(0)
+  const [hinta1, setHinta1] = useState(0)   ///MIETI KANNATTAISKO OLLA ALUSSA '' EIKÄ 0
   const [hinta2, setHinta2] = useState(0)
-
-  const [filter, setFilter] = useState({
-    district: false,
-    price: false,
-  })
+ 
 
   useEffect(() => {
     fetchAllTableNames().then(allTables => {
@@ -111,9 +109,9 @@ const Home = () => {
         <p>000</p>
       </div>
 
-      <div>
+      <div>   {/* ///////////NÄISSÄKÄÄN EI VIELÄ KAIKKI KAUPUNGINOSAT MUKANA... */}
         <row>
-          <td>Keskusta</td>
+          <td>Keskusta</td>    
           <Checkbox
             checked={state.Keskusta}
             onChange={handleChange('Keskusta')}
@@ -184,38 +182,38 @@ const Home = () => {
         <tbody>
           {table.length > 0 &&
             table
-              .filter((row, r) => {
-                //const hinta = row[6]
-                //for (let [Hinta, Hinta2] of object.entries(state)) {
-                //console.log(`${Hinta}: ${Hinta2}`);
-                //if (hinta < Hinta && hinta > Hinta2 ) {
-                //return true
-                //}
-                //}
-                //console.log(state.Keskusta)
+              .filter((row, r) => { 
+                if (r === 0) {   /////HYPÄTÄÄN OTSIKKORIVI ENSIN YLI
+                  return true
+                } 
                 const alue = row[1]
-                //console.log(alue)
-                //console.log(state)
-                for (let [key, value] of Object.entries(state)) {
+                console.log(alue, state[alue]) 
+
+               //return state[alue]   //// TÄMÄN PITÄISI KUITATA SEURAAVAT 7 RIVIÄ, kun kaikki kaupunginosat statessa ja Checkboxeissa oikein
+                
+               for (let [key, value] of Object.entries(state)) {
                   //console.log(`${key}: ${value}`)
                   if (key === alue && value) {
                     return true
                   }
-                }
-
+                } 
                 return false
               })
               .filter((row, r) => {
                 const hinta = row[6] 
-                if (hinta1 === 0 || hinta2 === 0) {
+                console.log('HINNAN TYYPPI:',typeof hinta)
+                if (r === 0) {   /////HYPÄTÄÄN OTSIKKORIVI ENSIN YLI
                   return true
-                } else if (hinta2 === 0) {
+                } 
+                if (hinta1 === 0 || hinta2 === 0) {  ///PITÄISKÖ OLLA hinta1 === '' jne..?
+                  return true
+                } else if (hinta2 === 0) {   //////  '' ?
                   if (hinta > hinta1 * 1000) {
                     return true
                   } else {
                     return false
                   }
-                } else if (hinta1 === 0) {
+                } else if (hinta1 === 0) {  ////  '' ?
                   if (hinta < hinta2 * 1000) {
                     return true
                   } else {
